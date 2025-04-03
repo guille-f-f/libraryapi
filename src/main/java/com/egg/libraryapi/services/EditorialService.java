@@ -51,6 +51,11 @@ public class EditorialService {
         return editorial;
     }
 
+    // Get active Editorials
+    public List<Editorial> getActiveEditorials() {
+        return editorialRepository.getActiveEditorials();
+    }
+
     // =======================
     // Private methods
     // =======================
