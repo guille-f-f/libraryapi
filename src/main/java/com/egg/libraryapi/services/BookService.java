@@ -2,23 +2,22 @@ package com.egg.libraryapi.services;
 
 import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
-import com.egg.libraryapi.repositories.BookReposity;
 import com.egg.libraryapi.repositories.BookRepository;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class BookService {
 
-    private BookReposity bookRepository;
+    private BookRepository bookRepository;
 
     @Autowired
-    public BookService(BookReposity bookReposity) {
-        this.bookRepository = bookReposity;
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
 
     // CREATE
@@ -29,8 +28,8 @@ public class BookService {
 
     // READ BY ID
     @Transactional(readOnly = true)
-    public Book getBookById(UUID idBook) {
-        return getBookOrThrow(idBook);
+    public Book getBookById(Long ISBN) {
+        return getBookOrThrow(ISBN);
     }
 
     // READ ALL

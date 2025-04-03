@@ -5,14 +5,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.egg.libraryapi.services.EditorialService;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/editorial")
 public class EditorialController {
-    
+
     private EditorialService editorialService;
 
     @Autowired
@@ -20,14 +23,16 @@ public class EditorialController {
         this.editorialService = editorialService;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Object> createEditorialController(String editorialName) {
+    @PostMapping("/create")
+    public ResponseEntity<Map<String, String>> createEditorialController(@RequestParam String editorialName) {
         try {
             editorialService.createEditorial(editorialName);
+            Map<String, String> response = Map.of("Response", "Editorial created successfully.");
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            Map<String, String> errorResponse = Map.of("Error", "Failed to create editorial: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-        return new ResponseEntity<>(HttpStatus.OK);
     }
-    
+
 }

@@ -35,7 +35,7 @@ public class AuthorService {
 
     // READ ALL
     @Transactional(readOnly = true)
-    public List<Author> getAllUsers() {
+    public List<Author> getAllAuthors() {
         return authorRepository.findAll();
     }
 
