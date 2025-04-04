@@ -48,12 +48,18 @@ public class EditorialService {
     public Editorial handleEditorialActivation(UUID idEditorial) {
         Editorial editorial = getEditorialOrThrow(idEditorial);
         editorial.setEditorialActive(!editorial.getEditorialActive());
+        editorialRepository.save(editorial);
         return editorial;
     }
 
-    // Get active Editorials
-    public List<Editorial> getActiveEditorials() {
-        return editorialRepository.getActiveEditorials();
+    // Get actives Editorials
+    public List<Editorial> getActivesEditorials() {
+        return editorialRepository.findByEditorialActiveTrue();
+    }
+
+    // Get inactives Editorials
+    public List<Editorial> getInactivesEditorials() {
+        return editorialRepository.findByEditorialActiveFalse();
     }
 
     // =======================
