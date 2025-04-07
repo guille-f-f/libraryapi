@@ -1,5 +1,6 @@
 package com.egg.libraryapi.repositories;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,5 +10,8 @@ import com.egg.libraryapi.entities.Editorial;
 
 @Repository
 public interface EditorialRepository extends JpaRepository<Editorial, UUID> {
+    List<Editorial> findByEditorialActiveTrue();
+
+    List<Editorial> findByEditorialActiveFalse();
 
 }

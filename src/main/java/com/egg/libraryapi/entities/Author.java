@@ -4,12 +4,11 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "autor")
+@Table(name = "author")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,5 +25,10 @@ public class Author {
 
     @Column(name = "author_name")
     private String authorName;
+
+    @PrePersist
+    private void onCreate() {
+        this.authorActive = true;
+    }
 
 }

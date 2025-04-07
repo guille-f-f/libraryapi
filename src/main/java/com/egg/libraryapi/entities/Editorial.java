@@ -24,4 +24,9 @@ public class Editorial {
     @Column(name = "editorial_name", unique = true)
     private String editorialName;
 
+    @PrePersist
+    private void onCreate() {
+        this.editorialActive = true;
+    }
+
 }

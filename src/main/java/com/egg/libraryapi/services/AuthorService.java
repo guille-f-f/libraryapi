@@ -21,26 +21,31 @@ public class AuthorService {
         this.authorRepository = authorRepository;
     }
 
-    @Transactional(readOnly = true)
-    public List<Author> getAllUsers() {
-        return authorRepository.findAll();
-    }
-
-    @Transactional(readOnly = true)
-    public Author getAuthorById(UUID idAutor) {
-        return getAuthorOrThrow(idAutor);
-    }
-
+    // CREATE
     @Transactional
     public Author createAuthor(String authorName) {
         return authorRepository.save(populateAuthor(new Author(), authorName));
     }
 
+    // READ BY ID
+    @Transactional(readOnly = true)
+    public Author getAuthorById(UUID idAutor) {
+        return getAuthorOrThrow(idAutor);
+    }
+
+    // READ ALL
+    @Transactional(readOnly = true)
+    public List<Author> getAllAuthors() {
+        return authorRepository.findAll();
+    }
+
+    // UPDATE
     @Transactional
     public Author updateAuthor(UUID idAuthor, String authorName) {
         return authorRepository.save(populateAuthor(getAuthorOrThrow(idAuthor), authorName));
     }
 
+    // DELETE
     @Transactional
     public Author handleAuthorActivation(UUID idAuthor) {
         Author author = getAuthorById(idAuthor);
@@ -60,7 +65,6 @@ public class AuthorService {
 
     private Author populateAuthor(Author author, String authorName) {
         author.setAuthorName(authorName);
-        author.setAuthorActive(true);
         return author;
     }
 
