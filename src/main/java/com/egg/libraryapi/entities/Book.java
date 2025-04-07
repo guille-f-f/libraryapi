@@ -28,5 +28,10 @@ public class Book {
 
     @ManyToOne
     private Author author;
+
+    @PrePersist
+    private void onCreate() {
+        this.bookActive = true;
+    }
     
 }

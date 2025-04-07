@@ -65,7 +65,6 @@ public class AuthorService {
 
     private Author populateAuthor(Author author, String authorName) {
         author.setAuthorName(authorName);
-        author.setAuthorActive(true);
         return author;
     }
 

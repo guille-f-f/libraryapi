@@ -7,12 +7,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.egg.libraryapi.entities.Editorial;
+import com.egg.libraryapi.models.EditorialRequestDTO;
 import com.egg.libraryapi.services.EditorialService;
+
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
@@ -29,9 +33,9 @@ public class EditorialController {
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> createEditorial(@RequestParam String editorialName) {
+    public ResponseEntity<Map<String, String>> createEditorial(@RequestBody @Valid EditorialRequestDTO editorialRequestDTO) {
         try {
-            editorialService.createEditorial(editorialName);
+            editorialService.createEditorial(editorialRequestDTO);
             Map<String, String> response = Map.of("message", "Editorial created successfully.");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {

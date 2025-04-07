@@ -1,7 +1,11 @@
 package com.egg.libraryapi.services;
 
+import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.entities.Book;
+import com.egg.libraryapi.entities.Editorial;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
+import com.egg.libraryapi.models.BookCreateDTO;
+import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.repositories.BookRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,21 +13,34 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class BookService {
 
     private BookRepository bookRepository;
+    private AuthorService authorService;
+    private EditorialService editorialService;
 
     @Autowired
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, AuthorService authorService, EditorialService editorialService) {
         this.bookRepository = bookRepository;
+        this.authorService = authorService;
+        this.editorialService = editorialService;
     }
 
     // CREATE
     @Transactional
-    public Book createBook(Long ISBN, String bookName) {
-        return bookRepository.save(populateBook(new Book(), ISBN, bookName));
+    public Book createBook(BookCreateDTO bookCreateDTO) {
+
+        System.out.println();
+        System.out.println(bookCreateDTO);
+        System.out.println();
+
+        Book book = populateBook(new Book(), bookCreateDTO.getIsbn(), bookCreateDTO.getBookTitle(),
+                bookCreateDTO.getSpecimens(), bookCreateDTO.getIdAuthor(), bookCreateDTO.getIdEditorial());
+        System.out.println(book);
+        return bookRepository.save(book);
     }
 
     // READ BY ID
@@ -38,17 +55,25 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+    // READ ACTIVES
+    @Transactional(readOnly = true)
+    public List<BookResponseDTO> getAllActiveBooks() {
+        return bookRepository.findBooksActives();
+    }
+
     // UPDATE
     @Transactional
-    public Book updateBook(Long ISBN, String bookName) {
-        Book book = getBookOrThrow(ISBN);
-        return bookRepository.save(populateBook(book, ISBN, bookName));
+    public Book updateBook(BookCreateDTO bookCreateDTO) {
+        Book book = getBookOrThrow(bookCreateDTO.getIsbn());
+        return bookRepository.save(populateBook(book, bookCreateDTO.getIsbn(), bookCreateDTO.getBookTitle(),
+                bookCreateDTO.getSpecimens(), bookCreateDTO.getIdAuthor(), bookCreateDTO.getIdEditorial()));
     }
 
     // DELETE
     public Book handleBookActivation(Long ISBN) {
         Book book = getBookOrThrow(ISBN);
         book.setBookActive(!book.getBookActive());
+        bookRepository.save(book);
         return book;
     }
 
@@ -61,10 +86,21 @@ public class BookService {
                 () -> new ObjectNotFoundException("Book with ISBN " + ISBN + " not found."));
     }
 
-    private Book populateBook(Book book, Long ISBN, String bookName) {
+    private Book populateBook(Book book, Long ISBN, String bookName, Integer specimens, UUID idAuthor,
+            UUID idEditorial) {
         book.setISBN(ISBN);
         book.setBookTitle(bookName);
-        book.setBookActive(true);
+        book.setSpecimens(specimens);
+        Editorial editorial = editorialService.getEditorialById(idEditorial);
+        if (editorial != null) {
+            book.setEditorial(editorial);
+        }
+        System.out.println("editorial: " + editorial);
+        Author author = authorService.getAuthorById(idAuthor);
+        if (author != null) {
+            book.setAuthor(author);
+        }
+        System.out.println("Author: " + author);
         return book;
     }
 
