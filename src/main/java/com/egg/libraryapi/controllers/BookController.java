@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.egg.libraryapi.models.BookCreateDTO;
+import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.services.BookService;
 
@@ -33,7 +33,7 @@ public class BookController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<Map<String, String>> createBook(@RequestBody @Valid BookCreateDTO bookCreateDTO) {
+    public ResponseEntity<Map<String, String>> createBook(@RequestBody @Valid BookRequestDTO bookCreateDTO) {
         try {
             bookService.createBook(bookCreateDTO);
             Map<String, String> response = Map.of("message", "Book created successfully.");

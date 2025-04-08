@@ -9,7 +9,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BookCreateDTO {
+public class BookRequestDTO {
     private Long isbn;
     private Integer specimens;
     @NotBlank(message = "El título no puede estar vacío")
