@@ -2,6 +2,7 @@ package com.egg.libraryapi.services;
 
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.EditorialRequestDTO;
+import com.egg.libraryapi.models.EditorialResponseDTO;
 
 import org.springframework.stereotype.Service;
 
@@ -23,11 +24,6 @@ public class EditorialService {
 
     // CREATE
     @Transactional
-    public Editorial createEditorial(String editorialName) {
-        return editorialRepository.save(populateEditorial(new Editorial(), editorialName));
-    }
-
-    @Transactional
     public Editorial createEditorial(EditorialRequestDTO editorialRequestDTO) {
         return editorialRepository.save(populateEditorial(new Editorial(), editorialRequestDTO.getEditorialName()));
     }
@@ -43,12 +39,12 @@ public class EditorialService {
     public List<Editorial> getAllEditorials() {
         return editorialRepository.findAll();
     }
-
+    
     // UPDATE
     @Transactional
-    public Editorial updateEditorial(UUID idEditorial, String editorialName) {
+    public Editorial updateEditorial(UUID idEditorial, EditorialRequestDTO editorialRequestDTO) {
         Editorial editorial = getEditorialOrThrow(idEditorial);
-        return editorialRepository.save(populateEditorial(editorial, editorialName));
+        return editorialRepository.save(populateEditorial(editorial, editorialRequestDTO.getEditorialName()));
     }
 
     // DELETE
@@ -60,8 +56,8 @@ public class EditorialService {
     }
 
     // Get actives Editorials
-    public List<Editorial> getActivesEditorials() {
-        return editorialRepository.findByEditorialActiveTrue();
+    public List<EditorialResponseDTO> getActivesEditorials() {
+        return editorialRepository.findEditorialsActives();
     }
 
     // Get inactives Editorials
