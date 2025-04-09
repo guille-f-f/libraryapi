@@ -9,5 +9,5 @@ import com.egg.libraryapi.entities.Author;
 
 @Repository
 public interface AuthorRepository extends JpaRepository<Author, UUID> {
-
+    
 }

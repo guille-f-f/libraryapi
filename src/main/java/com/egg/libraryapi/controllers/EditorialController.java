@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.egg.libraryapi.entities.Editorial;
 import com.egg.libraryapi.models.EditorialRequestDTO;
+import com.egg.libraryapi.models.EditorialResponseDTO;
 import com.egg.libraryapi.services.EditorialService;
 
 import jakarta.validation.Valid;
@@ -55,9 +56,9 @@ public class EditorialController {
     }
 
     @GetMapping("/actives")
-    public ResponseEntity<List<Editorial>> getActivesEditorials() {
+    public ResponseEntity<List<EditorialResponseDTO>> getActivesEditorials() {
         try {
-            List<Editorial> activesEditorials = editorialService.getActivesEditorials();
+            List<EditorialResponseDTO> activesEditorials = editorialService.getActivesEditorials();
             return ResponseEntity.ok(activesEditorials);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -86,9 +87,9 @@ public class EditorialController {
 
     @PatchMapping("/{idEditorial}")
     public ResponseEntity<Editorial> renameEditorial(@PathVariable String idEditorial,
-            @RequestParam String nameEditorial) {
+            @RequestBody EditorialRequestDTO editorialRequestDTO) {
         try {
-            Editorial editorial = editorialService.updateEditorial(UUID.fromString(idEditorial), nameEditorial);
+            Editorial editorial = editorialService.updateEditorial(UUID.fromString(idEditorial), editorialRequestDTO);
             return ResponseEntity.ok(editorial);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

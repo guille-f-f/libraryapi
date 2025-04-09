@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
+import com.egg.libraryapi.models.AuthorResquestDTO;
 import com.egg.libraryapi.repositories.AuthorRepository;
 
 @Service
@@ -23,8 +24,8 @@ public class AuthorService {
 
     // CREATE
     @Transactional
-    public Author createAuthor(String authorName) {
-        return authorRepository.save(populateAuthor(new Author(), authorName));
+    public Author createAuthor(AuthorResquestDTO authorRequestDTO) {
+        return authorRepository.save(populateAuthor(new Author(), authorRequestDTO.getAuthorName()));
     }
 
     // READ BY ID
@@ -41,8 +42,8 @@ public class AuthorService {
 
     // UPDATE
     @Transactional
-    public Author updateAuthor(UUID idAuthor, String authorName) {
-        return authorRepository.save(populateAuthor(getAuthorOrThrow(idAuthor), authorName));
+    public Author updateAuthor(UUID idAuthor, AuthorResquestDTO authorRequestDTO) {
+        return authorRepository.save(populateAuthor(getAuthorOrThrow(idAuthor), authorRequestDTO.getAuthorName()));
     }
 
     // DELETE

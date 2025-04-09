@@ -50,6 +50,15 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+    // READ ALL BY EDITORIAL
+    @Transactional(readOnly = true)
+    public List<BookResponseDTO> getAllBooksByEditorial(UUID idEditorial) {
+        
+        System.out.println("\n\n\n" + idEditorial + "\n\n\n");
+
+        return bookRepository.findBooksByEditorial(idEditorial);
+    }
+
     // READ ACTIVES
     @Transactional(readOnly = true)
     public List<BookResponseDTO> getAllActiveBooks() {
