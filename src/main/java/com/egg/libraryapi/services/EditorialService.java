@@ -34,6 +34,12 @@ public class EditorialService {
         return getEditorialOrThrow(idEditorial);
     }
 
+    @Transactional(readOnly = true)
+    public Editorial getEditorialByName(String editorialName) {
+        Editorial editorial = editorialRepository.findByEditorialName(editorialName);
+        return getEditorialOrThrow(editorial.getIdEditorial());
+    }
+
     // READ ALL
     @Transactional(readOnly = true)
     public List<Editorial> getAllEditorials() {

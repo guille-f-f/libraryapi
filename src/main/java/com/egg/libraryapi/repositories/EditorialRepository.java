@@ -15,6 +15,8 @@ public interface EditorialRepository extends JpaRepository<Editorial, UUID> {
     List<Editorial> findByEditorialActiveTrue();
     
     List<Editorial> findByEditorialActiveFalse();
+
+    Editorial findByEditorialName(String editorialName);
     
     // Only the active books are required.
     @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.editorialName) FROM Editorial e WHERE e.editorialActive = true")
