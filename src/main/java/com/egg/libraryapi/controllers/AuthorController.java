@@ -4,8 +4,6 @@ import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.models.AuthorResquestDTO;
 import com.egg.libraryapi.services.AuthorService;
 
-import jakarta.websocket.server.PathParam;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +23,7 @@ public class AuthorController {
         this.authorService = authorService;
     }
 
+    // Create
     @PostMapping("/create")
     public ResponseEntity<Object> createAuthorController(@RequestBody AuthorResquestDTO authorResquestDTO) {
         try {
@@ -36,6 +35,7 @@ public class AuthorController {
         }
     }
 
+    // Read
     @GetMapping("/list")
     public ResponseEntity<List<Author>> readAllAuthorsController() {
         try {
@@ -46,6 +46,7 @@ public class AuthorController {
         }
     }
 
+    // Update
     @PatchMapping("/{idAuthor}")
     public ResponseEntity<Author> updateAuthorController(@PathVariable String idAuthor,
             @RequestBody AuthorResquestDTO authorResquestDTO) {
