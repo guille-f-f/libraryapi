@@ -4,7 +4,7 @@ import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.entities.Editorial;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
-import com.egg.libraryapi.models.BookCreateDTO;
+import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.repositories.BookRepository;
 
@@ -31,14 +31,9 @@ public class BookService {
 
     // CREATE
     @Transactional
-    public Book createBook(BookCreateDTO bookCreateDTO) {
-
-        System.out.println();
-        System.out.println(bookCreateDTO);
-        System.out.println();
-
-        Book book = populateBook(new Book(), bookCreateDTO.getIsbn(), bookCreateDTO.getBookTitle(),
-                bookCreateDTO.getSpecimens(), bookCreateDTO.getIdAuthor(), bookCreateDTO.getIdEditorial());
+    public Book createBook(BookRequestDTO bookRequestDTO) {
+        Book book = populateBook(new Book(), bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
+                bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial());
         System.out.println(book);
         return bookRepository.save(book);
     }
@@ -55,6 +50,15 @@ public class BookService {
         return bookRepository.findAll();
     }
 
+    // READ ALL BY EDITORIAL
+    @Transactional(readOnly = true)
+    public List<BookResponseDTO> getAllBooksByEditorial(UUID idEditorial) {
+        
+        System.out.println("\n\n\n" + idEditorial + "\n\n\n");
+
+        return bookRepository.findBooksByEditorial(idEditorial);
+    }
+
     // READ ACTIVES
     @Transactional(readOnly = true)
     public List<BookResponseDTO> getAllActiveBooks() {
@@ -63,10 +67,10 @@ public class BookService {
 
     // UPDATE
     @Transactional
-    public Book updateBook(BookCreateDTO bookCreateDTO) {
-        Book book = getBookOrThrow(bookCreateDTO.getIsbn());
-        return bookRepository.save(populateBook(book, bookCreateDTO.getIsbn(), bookCreateDTO.getBookTitle(),
-                bookCreateDTO.getSpecimens(), bookCreateDTO.getIdAuthor(), bookCreateDTO.getIdEditorial()));
+    public Book updateBook(BookRequestDTO bookRequestDTO) {
+        Book book = getBookOrThrow(bookRequestDTO.getIsbn());
+        return bookRepository.save(populateBook(book, bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
+                bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial()));
     }
 
     // DELETE
@@ -100,7 +104,6 @@ public class BookService {
         if (author != null) {
             book.setAuthor(author);
         }
-        System.out.println("Author: " + author);
         return book;
     }
 

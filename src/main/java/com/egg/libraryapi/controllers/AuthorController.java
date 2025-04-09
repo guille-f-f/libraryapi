@@ -1,7 +1,11 @@
 package com.egg.libraryapi.controllers;
 
 import com.egg.libraryapi.entities.Author;
+import com.egg.libraryapi.models.AuthorResquestDTO;
 import com.egg.libraryapi.services.AuthorService;
+
+import jakarta.websocket.server.PathParam;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,12 +26,13 @@ public class AuthorController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Object> createAuthorController(@RequestParam String authorName) {
+    public ResponseEntity<Object> createAuthorController(@RequestBody AuthorResquestDTO authorResquestDTO) {
         try {
-            authorService.createAuthor(authorName);
-            return ResponseEntity.ok().build();
+            Author author = authorService.createAuthor(authorResquestDTO);
+            return ResponseEntity.ok(author);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error creating author: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating author: " + e.getMessage());
         }
     }
 
@@ -41,11 +46,12 @@ public class AuthorController {
         }
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<Void> updateAuthorController(@RequestParam UUID idAuthor, @RequestParam String authorName) {
+    @PatchMapping("/{idAuthor}")
+    public ResponseEntity<Author> updateAuthorController(@PathVariable String idAuthor,
+            @RequestBody AuthorResquestDTO authorResquestDTO) {
         try {
-            authorService.updateAuthor(idAuthor, authorName);
-            return ResponseEntity.ok().build();
+            Author author = authorService.updateAuthor(UUID.fromString(idAuthor), authorResquestDTO);
+            return ResponseEntity.ok(author);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
