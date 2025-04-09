@@ -29,7 +29,7 @@ public class BookService {
         this.editorialService = editorialService;
     }
 
-    // CREATE
+    // Create
     @Transactional
     public Book createBook(BookRequestDTO bookRequestDTO) {
         Book book = populateBook(new Book(), bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
@@ -38,34 +38,44 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    // READ BY ID
+    // Read by id
     @Transactional(readOnly = true)
     public Book getBookById(Long ISBN) {
         return getBookOrThrow(ISBN);
     }
 
-    // READ ALL
+    // Read books
     @Transactional(readOnly = true)
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
 
-    // READ ALL BY EDITORIAL
-    @Transactional(readOnly = true)
-    public List<BookResponseDTO> getAllBooksByEditorial(UUID idEditorial) {
-        
-        System.out.println("\n\n\n" + idEditorial + "\n\n\n");
-
-        return bookRepository.findBooksByEditorial(idEditorial);
+    // Read books by editorial
+    public List<BookResponseDTO> getAllBooksByEditorial(String editorialName) {
+        Editorial editorial = editorialService.getEditorialByName(editorialName);
+        return bookRepository.findBooksByEditorial(editorial.getIdEditorial());
     }
 
-    // READ ACTIVES
+    // Read books by author
+    public List<BookResponseDTO> getAllBooksByAuthor(String authorName) {
+        Author author = authorService.getAuthorByName(authorName);
+        return bookRepository.findBooksByAuthor(author.getIdAuthor());
+    }
+
+    // Read books by editorial and author
+    public List<BookResponseDTO> getAllBooksByEditorialAndAuthor(String editorialName, String authorName) {
+        Editorial editorial = editorialService.getEditorialByName(editorialName);
+        Author author = authorService.getAuthorByName(authorName);
+        return bookRepository.findBooksByEditorialAndAuthor(editorial.getIdEditorial(), author.getIdAuthor());
+    }
+    
+    // Read actives
     @Transactional(readOnly = true)
     public List<BookResponseDTO> getAllActiveBooks() {
         return bookRepository.findBooksActives();
     }
 
-    // UPDATE
+    // Update
     @Transactional
     public Book updateBook(BookRequestDTO bookRequestDTO) {
         Book book = getBookOrThrow(bookRequestDTO.getIsbn());
@@ -73,7 +83,7 @@ public class BookService {
                 bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial()));
     }
 
-    // DELETE
+    // Delete
     public Book handleBookActivation(Long ISBN) {
         Book book = getBookOrThrow(ISBN);
         book.setBookActive(!book.getBookActive());

@@ -1,6 +1,7 @@
 package com.egg.libraryapi.repositories;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,7 +17,7 @@ public interface EditorialRepository extends JpaRepository<Editorial, UUID> {
     
     List<Editorial> findByEditorialActiveFalse();
 
-    Editorial findByEditorialName(String editorialName);
+    Optional<Editorial> findByEditorialName(String editorialName);
     
     // Only the active books are required.
     @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.editorialName) FROM Editorial e WHERE e.editorialActive = true")

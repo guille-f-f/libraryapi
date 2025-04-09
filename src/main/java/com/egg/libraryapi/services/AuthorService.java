@@ -22,31 +22,37 @@ public class AuthorService {
         this.authorRepository = authorRepository;
     }
 
-    // CREATE
+    // Create
     @Transactional
     public Author createAuthor(AuthorResquestDTO authorRequestDTO) {
         return authorRepository.save(populateAuthor(new Author(), authorRequestDTO.getAuthorName()));
     }
 
-    // READ BY ID
+    // Read by id
     @Transactional(readOnly = true)
     public Author getAuthorById(UUID idAutor) {
         return getAuthorOrThrow(idAutor);
     }
 
-    // READ ALL
+    // Read all
     @Transactional(readOnly = true)
     public List<Author> getAllAuthors() {
         return authorRepository.findAll();
     }
 
-    // UPDATE
+    // Read by name
+    @Transactional(readOnly = true)
+    public Author getAuthorByName(String authorName) {
+        return getAuthorOrThrow(authorName);
+    }
+
+    // Update
     @Transactional
     public Author updateAuthor(UUID idAuthor, AuthorResquestDTO authorRequestDTO) {
         return authorRepository.save(populateAuthor(getAuthorOrThrow(idAuthor), authorRequestDTO.getAuthorName()));
     }
 
-    // DELETE
+    // Delete
     @Transactional
     public Author handleAuthorActivation(UUID idAuthor) {
         Author author = getAuthorById(idAuthor);
@@ -61,6 +67,12 @@ public class AuthorService {
     private Author getAuthorOrThrow(UUID idAutor) {
         Author author = authorRepository.findById(idAutor).orElseThrow(
                 () -> new ObjectNotFoundException("Author with id " + idAutor + " not found."));
+        return author;
+    }
+
+    private Author getAuthorOrThrow(String authorName) {
+        Author author = authorRepository.findByAuthorName(authorName).orElseThrow(
+            () -> new ObjectNotFoundException("Author with name " + authorName + " not found."));
         return author;
     }
 

@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.egg.libraryapi.entities.Editorial;
@@ -33,8 +32,10 @@ public class EditorialController {
         this.editorialService = editorialService;
     }
 
+    // Create
     @PostMapping
-    public ResponseEntity<Map<String, String>> createEditorial(@RequestBody @Valid EditorialRequestDTO editorialRequestDTO) {
+    public ResponseEntity<Map<String, String>> createEditorial(
+            @RequestBody @Valid EditorialRequestDTO editorialRequestDTO) {
         try {
             editorialService.createEditorial(editorialRequestDTO);
             Map<String, String> response = Map.of("message", "Editorial created successfully.");
@@ -45,6 +46,7 @@ public class EditorialController {
         }
     }
 
+    // Get all editorials
     @GetMapping
     public ResponseEntity<List<Editorial>> getAllEditorials() {
         try {
@@ -55,6 +57,7 @@ public class EditorialController {
         }
     }
 
+    // Get all actives editorials
     @GetMapping("/actives")
     public ResponseEntity<List<EditorialResponseDTO>> getActivesEditorials() {
         try {
@@ -65,6 +68,7 @@ public class EditorialController {
         }
     }
 
+    // Get all inactives editorials
     @GetMapping("/inactives")
     public ResponseEntity<List<Editorial>> getInactivesEditorials() {
         try {
@@ -74,8 +78,21 @@ public class EditorialController {
             return ResponseEntity.badRequest().build();
         }
     }
+    
+    // Update
+    @PatchMapping("/{idEditorial}")
+    public ResponseEntity<Editorial> renameEditorial(@PathVariable String idEditorial,
+            @RequestBody EditorialRequestDTO editorialRequestDTO) {
+        try {
+            Editorial editorial = editorialService.updateEditorial(UUID.fromString(idEditorial), editorialRequestDTO);
+            return ResponseEntity.ok(editorial);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
-    @DeleteMapping("/{idEditorial}")
+    // Delete
+    @DeleteMapping("/deactivate/{idEditorial}")
     public ResponseEntity<String> deleteEditorial(@PathVariable String idEditorial) {
         try {
             editorialService.handleEditorialActivation(UUID.fromString(idEditorial));
@@ -85,14 +102,14 @@ public class EditorialController {
         }
     }
 
-    @PatchMapping("/{idEditorial}")
-    public ResponseEntity<Editorial> renameEditorial(@PathVariable String idEditorial,
-            @RequestBody EditorialRequestDTO editorialRequestDTO) {
+    @DeleteMapping("/{idEditorial}")
+    public ResponseEntity<String> deleteEditorialById(@PathVariable String idEditorial) {
         try {
-            Editorial editorial = editorialService.updateEditorial(UUID.fromString(idEditorial), editorialRequestDTO);
-            return ResponseEntity.ok(editorial);
+            editorialService.deleteEditorial(UUID.fromString(idEditorial));
+            return ResponseEntity.ok("Editorial deleted successfully.");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to delete editorial: " + e.getMessage());
         }
     }
 

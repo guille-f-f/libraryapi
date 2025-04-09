@@ -22,13 +22,13 @@ public class EditorialService {
         this.editorialRepository = editorialRepository;
     }
 
-    // CREATE
+    // Create
     @Transactional
     public Editorial createEditorial(EditorialRequestDTO editorialRequestDTO) {
         return editorialRepository.save(populateEditorial(new Editorial(), editorialRequestDTO.getEditorialName()));
     }
-    
-    // READ BY ID
+
+    // Read by id
     @Transactional(readOnly = true)
     public Editorial getEditorialById(UUID idEditorial) {
         return getEditorialOrThrow(idEditorial);
@@ -36,24 +36,23 @@ public class EditorialService {
 
     @Transactional(readOnly = true)
     public Editorial getEditorialByName(String editorialName) {
-        Editorial editorial = editorialRepository.findByEditorialName(editorialName);
-        return getEditorialOrThrow(editorial.getIdEditorial());
+        return getEditorialOrThrow(editorialName);
     }
 
-    // READ ALL
+    // Read all
     @Transactional(readOnly = true)
     public List<Editorial> getAllEditorials() {
         return editorialRepository.findAll();
     }
-    
-    // UPDATE
+
+    // Update
     @Transactional
     public Editorial updateEditorial(UUID idEditorial, EditorialRequestDTO editorialRequestDTO) {
         Editorial editorial = getEditorialOrThrow(idEditorial);
         return editorialRepository.save(populateEditorial(editorial, editorialRequestDTO.getEditorialName()));
     }
 
-    // DELETE
+    // Delete
     public Editorial handleEditorialActivation(UUID idEditorial) {
         Editorial editorial = getEditorialOrThrow(idEditorial);
         editorial.setEditorialActive(!editorial.getEditorialActive());
@@ -61,12 +60,17 @@ public class EditorialService {
         return editorial;
     }
 
-    // Get actives Editorials
+    public void deleteEditorial(UUID idEditorial) {
+        Editorial editorial = getEditorialOrThrow(idEditorial);
+        editorialRepository.delete(editorial);
+    }
+
+    // Get actives editorials
     public List<EditorialResponseDTO> getActivesEditorials() {
         return editorialRepository.findEditorialsActives();
     }
 
-    // Get inactives Editorials
+    // Get inactives editorials
     public List<Editorial> getInactivesEditorials() {
         return editorialRepository.findByEditorialActiveFalse();
     }
@@ -78,6 +82,11 @@ public class EditorialService {
     private Editorial getEditorialOrThrow(UUID idEditorial) {
         return editorialRepository.findById(idEditorial).orElseThrow(
                 () -> new ObjectNotFoundException("Editorial with id " + idEditorial + " not found."));
+    }
+
+    private Editorial getEditorialOrThrow(String editorialName) {
+        return editorialRepository.findByEditorialName(editorialName).orElseThrow(
+                () -> new ObjectNotFoundException("Editorial " + editorialName + " not found."));
     }
 
     private Editorial populateEditorial(Editorial editorial, String editorialName) {
