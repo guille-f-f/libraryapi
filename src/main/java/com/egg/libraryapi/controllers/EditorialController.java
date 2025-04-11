@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.egg.libraryapi.entities.Editorial;
+import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.EditorialRequestDTO;
 import com.egg.libraryapi.models.EditorialResponseDTO;
 import com.egg.libraryapi.services.EditorialService;
@@ -43,6 +44,19 @@ public class EditorialController {
         } catch (Exception e) {
             Map<String, String> errorResponse = Map.of("error", "Failed to create editorial: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // Get by id
+    @GetMapping("/{idEditorial}")
+    public ResponseEntity<EditorialResponseDTO> getEditorialById(@PathVariable String idEditorial) {
+        try {
+            EditorialResponseDTO editorial = editorialService.getEditorialResponseDTOById(UUID.fromString(idEditorial));
+            return ResponseEntity.ok(editorial);
+        } catch (ObjectNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

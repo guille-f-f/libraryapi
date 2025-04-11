@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
+import com.egg.libraryapi.models.AuthorResponseDTO;
 import com.egg.libraryapi.models.AuthorResquestDTO;
 import com.egg.libraryapi.repositories.AuthorRepository;
 
@@ -30,8 +31,8 @@ public class AuthorService {
 
     // Read by id
     @Transactional(readOnly = true)
-    public Author getAuthorById(UUID idAutor) {
-        return getAuthorOrThrow(idAutor);
+    public AuthorResponseDTO getAuthorById(UUID idAutor) {
+        return getAuthorResponseDTOOrThrow(idAutor);
     }
 
     // Read all
@@ -55,7 +56,7 @@ public class AuthorService {
     // Delete
     @Transactional
     public Author handleAuthorActivation(UUID idAuthor) {
-        Author author = getAuthorById(idAuthor);
+        Author author = authorRepository.findById(idAuthor).orElseThrow(() -> new ObjectNotFoundException("Author with id " + idAuthor + " not found."));
         author.setAuthorActive(!author.getAuthorActive());
         return author;
     }
@@ -71,6 +72,18 @@ public class AuthorService {
     }
 
     private Author getAuthorOrThrow(String authorName) {
+        Author author = authorRepository.findByAuthorName(authorName).orElseThrow(
+            () -> new ObjectNotFoundException("Author with name " + authorName + " not found."));
+        return author;
+    }
+
+    private AuthorResponseDTO getAuthorResponseDTOOrThrow(UUID idAutor) {
+        AuthorResponseDTO author = authorRepository.findAuthorById(idAutor).orElseThrow(
+                () -> new ObjectNotFoundException("Author with id " + idAutor + " not found."));
+        return author;
+    }
+
+    private Author getAuthorResponseDTOOrThrow(String authorName) {
         Author author = authorRepository.findByAuthorName(authorName).orElseThrow(
             () -> new ObjectNotFoundException("Author with name " + authorName + " not found."));
         return author;

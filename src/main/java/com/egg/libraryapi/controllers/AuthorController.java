@@ -1,6 +1,7 @@
 package com.egg.libraryapi.controllers;
 
 import com.egg.libraryapi.entities.Author;
+import com.egg.libraryapi.models.AuthorResponseDTO;
 import com.egg.libraryapi.models.AuthorResquestDTO;
 import com.egg.libraryapi.services.AuthorService;
 
@@ -36,6 +37,16 @@ public class AuthorController {
     }
 
     // Read
+    @GetMapping("/{idAuthor}")
+    public ResponseEntity<AuthorResponseDTO> readAuthorController(@PathVariable String idAuthor) {
+        try {
+            AuthorResponseDTO author = authorService.getAuthorById(UUID.fromString(idAuthor));
+            return ResponseEntity.ok(author);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     @GetMapping("/list")
     public ResponseEntity<List<Author>> readAllAuthorsController() {
         try {
