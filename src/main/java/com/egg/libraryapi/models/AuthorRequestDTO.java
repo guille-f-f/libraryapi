@@ -5,6 +5,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuthorResquestDTO {
+@Builder
+public class AuthorRequestDTO {
     private String authorName;
 }

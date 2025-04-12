@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${titulo}">Biblioteca Central</title>
+
+    <!-- SEO Meta -->
+    <meta name="description" th:attr="content=${descripcion}" />
+    <meta
+      name="keywords"
+      content="biblioteca, libros, lectura, cultura, novedades"
+    />
+    <meta property="og:title" th:attr="content=${titulo}" />
+    <meta property="og:description" th:attr="content=${descripcion}" />
+    <meta
+      property="og:image"
+      content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ21sTxrHP4SFm5HKRD3GwwBGR-FmiLjA7uQQ&s"
+    />
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Custom style -->
+    <style>
+      .hero {
+        background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ21sTxrHP4SFm5HKRD3GwwBGR-FmiLjA7uQQ&s");
+        background-size: cover;
+        background-position: center;
+        height: 70vh;
+        position: relative;
+        color: white;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5); /* Oscurecer para resaltar texto */
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .navbar-dark .nav-link:hover {
+        color: #f8f9fa;
+      }
+
+      .dropdown-menu a:hover {
+        background-color: #e9ecef;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top shadow">
+      <div class="container">
+        <a class="navbar-brand" href="#" th:text="${titulo}">Biblioteca</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="#">Catálogo</a></li>
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                Servicios
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Préstamos</a></li>
+                <li><a class="dropdown-item" href="#">Eventos</a></li>
+                <li><a class="dropdown-item" href="#">Afiliación</a></li>
+              </ul>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="#">Contacto</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <header class="hero d-flex align-items-center">
+      <div class="container hero-content">
+        <h1 class="display-4 fw-bold" th:text="${titulo}">
+          Bienvenido a la Biblioteca Central
+        </h1>
+        <p class="lead" th:text="${subtitulo}">
+          Un espacio para descubrir, aprender y crecer
+        </p>
+      </div>
+    </header>
+
+    <!-- Novedades -->
+    <main class="container my-5">
+      <section>
+        <h2 class="mb-4 text-center">Novedades</h2>
+        <div class="row g-4">
+          <div class="col-md-4" th:each="libro : ${novedades}">
+            <div class="card h-100 shadow-sm">
+              <img
+                th:src="@{/images/libros/{img}(img=${libro.imagen})}"
+                class="card-img-top"
+                th:alt="${libro.titulo}"
+              />
+              <div class="card-body">
+                <h5 class="card-title" th:text="${libro.titulo}">
+                  Título del libro
+                </h5>
+                <p class="card-text" th:text="${libro.descripcion}">
+                  Descripción breve del libro.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light text-center py-4 mt-5">
+      <p class="mb-0">
+        &copy; 2025 Biblioteca Central - Todos los derechos reservados
+      </p>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

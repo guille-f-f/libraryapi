@@ -2,7 +2,7 @@ package com.egg.libraryapi.controllers;
 
 import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.models.AuthorResponseDTO;
-import com.egg.libraryapi.models.AuthorResquestDTO;
+import com.egg.libraryapi.models.AuthorRequestDTO;
 import com.egg.libraryapi.services.AuthorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +26,9 @@ public class AuthorController {
 
     // Create
     @PostMapping("/create")
-    public ResponseEntity<Object> createAuthorController(@RequestBody AuthorResquestDTO authorResquestDTO) {
+    public ResponseEntity<Object> createAuthorController(@RequestBody AuthorRequestDTO authorResquestDTO) {
         try {
-            Author author = authorService.createAuthor(authorResquestDTO);
-            return ResponseEntity.ok(author);
+            return ResponseEntity.ok(authorService.createAuthor(authorResquestDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error creating author: " + e.getMessage());
@@ -40,8 +39,7 @@ public class AuthorController {
     @GetMapping("/{idAuthor}")
     public ResponseEntity<AuthorResponseDTO> readAuthorController(@PathVariable String idAuthor) {
         try {
-            AuthorResponseDTO author = authorService.getAuthorById(UUID.fromString(idAuthor));
-            return ResponseEntity.ok(author);
+            return ResponseEntity.ok(authorService.getAuthorResponseDTOById(UUID.fromString(idAuthor)));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -50,8 +48,7 @@ public class AuthorController {
     @GetMapping("/list")
     public ResponseEntity<List<Author>> readAllAuthorsController() {
         try {
-            List<Author> authors = authorService.getAllAuthors();
-            return ResponseEntity.ok(authors);
+            return ResponseEntity.ok(authorService.getAllAuthors());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -60,10 +57,9 @@ public class AuthorController {
     // Update
     @PatchMapping("/{idAuthor}")
     public ResponseEntity<Author> updateAuthorController(@PathVariable String idAuthor,
-            @RequestBody AuthorResquestDTO authorResquestDTO) {
+            @RequestBody AuthorRequestDTO authorResquestDTO) {
         try {
-            Author author = authorService.updateAuthor(UUID.fromString(idAuthor), authorResquestDTO);
-            return ResponseEntity.ok(author);
+            return ResponseEntity.ok(authorService.updateAuthor(UUID.fromString(idAuthor), authorResquestDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

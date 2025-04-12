@@ -51,8 +51,7 @@ public class EditorialController {
     @GetMapping("/{idEditorial}")
     public ResponseEntity<EditorialResponseDTO> getEditorialById(@PathVariable String idEditorial) {
         try {
-            EditorialResponseDTO editorial = editorialService.getEditorialResponseDTOById(UUID.fromString(idEditorial));
-            return ResponseEntity.ok(editorial);
+            return ResponseEntity.ok(editorialService.getEditorialResponseDTOById(UUID.fromString(idEditorial)));
         } catch (ObjectNotFoundException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         } catch (Exception e) {

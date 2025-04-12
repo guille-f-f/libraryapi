@@ -15,6 +15,6 @@ import com.egg.libraryapi.models.AuthorResponseDTO;
 public interface AuthorRepository extends JpaRepository<Author, UUID> {
     public Optional<Author> findByAuthorName(String authorName);
 
-    @Query("SELECT new com.egg.libraryapi.models.AuthorResponseDTO(a.authorName) FROM Author a WHERE a.authorName = :idAuthor")
+    @Query("SELECT new com.egg.libraryapi.models.AuthorResponseDTO(a.authorName) FROM Author a WHERE a.idAuthor = :idAuthor")
     public Optional<AuthorResponseDTO> findAuthorById(@Param("idAuthor") UUID idAuthor);
 }

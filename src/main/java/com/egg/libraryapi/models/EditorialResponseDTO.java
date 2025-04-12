@@ -5,6 +5,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class EditorialResponseDTO {
     private String editorialName;   
 }

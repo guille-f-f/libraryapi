@@ -9,6 +9,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class BookRequestDTO {
     private Long isbn;
     private Integer specimens;

@@ -9,6 +9,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class EditorialRequestDTO {
     @NotBlank
     @Size(min = 5, max = 150, message = Messages.SIZE_ERROR)

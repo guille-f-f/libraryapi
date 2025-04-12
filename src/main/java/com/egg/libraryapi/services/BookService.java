@@ -43,8 +43,6 @@ public class BookService {
     @Transactional
     public Book createBook(BookRequestDTO bookRequestDTO) {
         Book book = modelMapper.map(bookRequestDTO, Book.class);
-        System.out.println("bookRequestDTO: " + bookRequestDTO);
-        System.out.println("book: " + book);
         return bookRepository.save(book);
     }
 
