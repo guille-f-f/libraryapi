@@ -35,6 +35,17 @@ public class EditorialService {
     }
 
     @Transactional(readOnly = true)
+    public EditorialResponseDTO getEditorialResponseDTOById(UUID idEditorial) {
+        return getEditorialResponseDTOOrThrow(idEditorial);
+    }
+
+    // Read by name
+    @Transactional(readOnly = true)
+    public EditorialResponseDTO getEditorialResponseDTOByName(String editorialName) {
+        return getEditorialResponseDTOOrThrow(editorialName);
+    }
+
+    @Transactional(readOnly = true)
     public Editorial getEditorialByName(String editorialName) {
         return getEditorialOrThrow(editorialName);
     }
@@ -78,6 +89,16 @@ public class EditorialService {
     // =======================
     // Private methods
     // =======================
+
+    private EditorialResponseDTO getEditorialResponseDTOOrThrow(UUID idEditorial) {
+        return editorialRepository.findEditorialById(idEditorial).orElseThrow(
+                () -> new ObjectNotFoundException("Editorial with id " + idEditorial + " not found."));
+    }
+
+    private EditorialResponseDTO getEditorialResponseDTOOrThrow(String editorialName) {
+        return editorialRepository.findByQueryWithEditorialName(editorialName).orElseThrow(
+                () -> new ObjectNotFoundException("Editorial " + editorialName + " not found."));
+    }
 
     private Editorial getEditorialOrThrow(UUID idEditorial) {
         return editorialRepository.findById(idEditorial).orElseThrow(

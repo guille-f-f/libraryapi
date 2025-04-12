@@ -8,6 +8,7 @@ import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.repositories.BookRepository;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,20 +22,27 @@ public class BookService {
     private BookRepository bookRepository;
     private AuthorService authorService;
     private EditorialService editorialService;
+    private ModelMapper modelMapper;
 
     @Autowired
-    public BookService(BookRepository bookRepository, AuthorService authorService, EditorialService editorialService) {
+    public BookService(BookRepository bookRepository, AuthorService authorService, EditorialService editorialService, ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.editorialService = editorialService;
+        this.modelMapper = modelMapper;
     }
 
     // Create
+    // @Transactional
+    // public Book createBook(BookRequestDTO bookRequestDTO) {
+    //     Book book = populateBook(new Book(), bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
+    //             bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial());
+    //     return bookRepository.save(book);
+    // }
+
     @Transactional
     public Book createBook(BookRequestDTO bookRequestDTO) {
-        Book book = populateBook(new Book(), bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
-                bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial());
-        System.out.println(book);
+        Book book = modelMapper.map(bookRequestDTO, Book.class);
         return bookRepository.save(book);
     }
 
@@ -100,6 +108,7 @@ public class BookService {
                 () -> new ObjectNotFoundException("Book with ISBN " + ISBN + " not found."));
     }
 
+    // Mapping the book object with the request data
     private Book populateBook(Book book, Long ISBN, String bookName, Integer specimens, UUID idAuthor,
             UUID idEditorial) {
         book.setISBN(ISBN);
@@ -116,5 +125,5 @@ public class BookService {
         }
         return book;
     }
-
+    
 }

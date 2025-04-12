@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.services.BookService;
@@ -37,8 +38,8 @@ public class BookController {
     @PostMapping
     public ResponseEntity<Map<String, String>> createBook(@RequestBody @Valid BookRequestDTO bookCreateDTO) {
         try {
-            bookService.createBook(bookCreateDTO);
-            Map<String, String> response = Map.of("message", "Book created successfully.");
+            Book book = bookService.createBook(bookCreateDTO);
+            Map<String, String> response = Map.of("message", "Book created successfully.", "book", book.toString());
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
             Map<String, String> errorResponse = Map.of("error", "Failed to create book: " + e.getMessage());
