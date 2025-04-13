@@ -11,6 +11,10 @@ import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.models.BookResponseDTO;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
+        // Find BookResponseDTO by ISBN
+        @Query("SELECT new com.egg.libraryapi.models.BookResponseDTO(b.bookTitle, b.specimens) FROM Book b WHERE b.ISBN = :isbn")
+        BookResponseDTO findBookResponseDTOByISBN(@Param("isbn") Long isbn); 
+        
         // Only the active books are required
         @Query("SELECT new com.egg.libraryapi.models.BookResponseDTO(b.bookTitle, b.specimens) FROM Book b WHERE b.bookActive = true")
         List<BookResponseDTO> findBooksActives();
@@ -30,5 +34,5 @@ public interface BookRepository extends JpaRepository<Book, Long> {
                         "FROM Book b WHERE b.editorial.idEditorial = :idEditorial AND b.author.idAuthor = :idAuthor")
         List<BookResponseDTO> findBooksByEditorialAndAuthor(@Param("idEditorial") UUID idEditorial,
                         @Param("idAuthor") UUID idAuthor);
-
+                        
 }

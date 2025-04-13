@@ -13,15 +13,15 @@ public class Book {
     @Id
     @Column(name = "isbn")
     private Long ISBN;
-
-    @Column(name = "specimens")
-    private Integer specimens;
-
+    
     @Column(name = "book_active")
     private Boolean bookActive;
 
     @Column(name = "book_title")
     private String bookTitle;
+    
+    @Column(name = "specimens")
+    private Integer specimens;
 
     @ManyToOne
     private Editorial editorial;

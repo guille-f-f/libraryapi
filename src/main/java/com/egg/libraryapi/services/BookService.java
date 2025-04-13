@@ -52,6 +52,11 @@ public class BookService {
         return getBookOrThrow(ISBN);
     }
 
+    @Transactional(readOnly = true)
+    public BookResponseDTO getBookResponseDTOByISBN(Long ISBN) {
+        return bookRepository.findBookResponseDTOByISBN(ISBN);
+    }
+
     // Read books
     @Transactional(readOnly = true)
     public List<Book> getAllBooks() {

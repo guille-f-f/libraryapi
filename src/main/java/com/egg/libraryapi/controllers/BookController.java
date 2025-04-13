@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.egg.libraryapi.entities.Book;
+import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.services.BookService;
@@ -45,6 +46,23 @@ public class BookController {
             Map<String, String> errorResponse = Map.of("error", "Failed to create book: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    // Read by id
+    @GetMapping("/{isbn}")
+    public ResponseEntity<BookResponseDTO> getBookByIsbn(@PathVariable Long isbn) {
+        BookResponseDTO book = null;
+        try {
+            book = bookService.getBookResponseDTOByISBN(isbn);
+            if (book == null) {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (ObjectNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok(book);
     }
 
     // Active list
