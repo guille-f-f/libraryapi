@@ -23,10 +23,12 @@ public class Book {
     @Column(name = "specimens")
     private Integer specimens;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "id_editorial", nullable = false)
     private Editorial editorial;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "id_author", nullable = false)
     private Author author;
 
     @PrePersist

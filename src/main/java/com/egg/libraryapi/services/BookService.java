@@ -25,7 +25,8 @@ public class BookService {
     private ModelMapper modelMapper;
 
     @Autowired
-    public BookService(BookRepository bookRepository, AuthorService authorService, EditorialService editorialService, ModelMapper modelMapper) {
+    public BookService(BookRepository bookRepository, AuthorService authorService, EditorialService editorialService,
+            ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
         this.authorService = authorService;
         this.editorialService = editorialService;
@@ -33,13 +34,6 @@ public class BookService {
     }
 
     // Create
-    // @Transactional
-    // public Book createBook(BookRequestDTO bookRequestDTO) {
-    //     Book book = populateBook(new Book(), bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
-    //             bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial());
-    //     return bookRepository.save(book);
-    // }
-
     @Transactional
     public Book createBook(BookRequestDTO bookRequestDTO) {
         Book book = modelMapper.map(bookRequestDTO, Book.class);
@@ -81,7 +75,7 @@ public class BookService {
         Author author = authorService.getAuthorByName(authorName);
         return bookRepository.findBooksByEditorialAndAuthor(editorial.getIdEditorial(), author.getIdAuthor());
     }
-    
+
     // Read actives
     @Transactional(readOnly = true)
     public List<BookResponseDTO> getAllActiveBooks() {
@@ -130,5 +124,5 @@ public class BookService {
         }
         return book;
     }
-    
+
 }
