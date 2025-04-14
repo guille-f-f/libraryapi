@@ -47,7 +47,7 @@ public class BookController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
-
+    
     // Read by id
     @GetMapping("/{isbn}")
     public ResponseEntity<BookResponseDTO> getBookByIsbn(@PathVariable Long isbn) {
@@ -64,7 +64,17 @@ public class BookController {
         }
         return ResponseEntity.ok(book);
     }
-
+    
+    // Read all
+    @GetMapping
+    public ResponseEntity<List<Book>> listBooks() {
+        List<Book> books = bookService.getAllBooks();
+        if (books.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(books);
+    }
+    
     // Active list
     @GetMapping("/active")
     public ResponseEntity<List<BookResponseDTO>> listActiveBooks() {
