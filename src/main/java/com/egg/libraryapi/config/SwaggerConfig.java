@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 
+// Access to documentation: URL/swagger-ui/index.html
 @Configuration
 public class SwaggerConfig {
 

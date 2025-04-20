@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.egg.libraryapi.entities.Author;
-import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.AuthorResponseDTO;
 import com.egg.libraryapi.models.AuthorRequestDTO;
