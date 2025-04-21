@@ -29,6 +29,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        System.out.println("SecurityConfig.filterChain");
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req.requestMatchers("/auth/**")
@@ -37,10 +38,10 @@ public class SecurityConfig {
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-        .logout(logout -> logout.logoutUrl("/auth/logout")
-        .logoutSuccessHandler(
-        (request, response, authentication) ->
-        SecurityContextHolder.clearContext()));
+                .logout(logout -> logout.logoutUrl("/auth/logout")
+                .logoutSuccessHandler(
+                    (request, response, authentication) ->
+                    SecurityContextHolder.clearContext()));
 
         return http.build();
     }
