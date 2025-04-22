@@ -1,10 +1,13 @@
 package com.egg.libraryapi.config;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -28,12 +31,12 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
-
     // ¿Qué hace este filtro en cada request?
     // Intercepta el request antes de que llegue al controlador.
     // Busca si hay un header Authorization con un JWT.
     // Si encuentra un token válido → autentica al usuario sin necesidad de login.
-    // Si no hay token, simplemente pasa el control y la seguridad de Spring determinará si está autorizado o no.
+    // Si no hay token, simplemente pasa el control y la seguridad de Spring
+    // determinará si está autorizado o no.
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
@@ -50,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
-                System.out.println(authHeader);
+        System.out.println(authHeader);
         // Si está presente y comienza con "Bearer ", lo recorta.
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
@@ -75,8 +78,14 @@ public class JwtFilter extends OncePerRequestFilter {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
             if (jwtUtil.isTokenValid(token, userDetails)) {
+                String role = jwtUtil.extractRole(token);
+                
+                // 🔁 Convertir a una lista de GrantedAuthority
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+                
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
+                        null, authorities);
+
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
