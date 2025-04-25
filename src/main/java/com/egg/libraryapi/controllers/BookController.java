@@ -51,8 +51,9 @@ public class BookController {
     
     // Read by id
     @GetMapping("/{isbn}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookResponseDTO> getBookByIsbn(@PathVariable Long isbn) {
+        System.out.println("Libro por ISBN");
         BookResponseDTO book = null;
         try {
             book = bookService.getBookResponseDTOByISBN(isbn);
@@ -69,7 +70,7 @@ public class BookController {
     
     // Read all
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Book>> listBooks() {
         List<Book> books = bookService.getAllBooks();
         if (books.isEmpty()) {
@@ -80,6 +81,7 @@ public class BookController {
     
     // Active list
     @GetMapping("/active")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listActiveBooks() {
         List<BookResponseDTO> books = bookService.getAllActiveBooks();
         if (books.isEmpty()) {
@@ -90,6 +92,7 @@ public class BookController {
 
     // Filter by editorial
     @GetMapping("/editorial")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listBooksByEditorial(
             @RequestParam @NotBlank String editorialName) {
         List<BookResponseDTO> books = bookService.getAllBooksByEditorial(editorialName);
@@ -100,6 +103,7 @@ public class BookController {
 
     // Filter by author
     @GetMapping("/author")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listBooksByAuthor(
             @RequestParam @NotBlank String authorName) {
         List<BookResponseDTO> books = bookService.getAllBooksByAuthor(authorName);
@@ -110,6 +114,7 @@ public class BookController {
 
     // Filter by editorial and author
     @GetMapping("/editorial-author")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listBooksByEditorialAndAuthor(
             @RequestParam @NotBlank String editorialName,
             @RequestParam @NotBlank String authorName) {
@@ -121,6 +126,7 @@ public class BookController {
 
     // Delete
     @DeleteMapping("/{isbn}")
+    @PreAuthorize("hasRole('USER')")
     public String deleteBook(@PathVariable Long isbn) {
         System.out.println(isbn);
         try {

@@ -8,6 +8,7 @@ import com.egg.libraryapi.services.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class AuthorController {
 
     // Create
     @PostMapping("/create")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Object> createAuthorController(@RequestBody AuthorRequestDTO authorResquestDTO) {
         try {
             return ResponseEntity.ok(authorService.createAuthor(authorResquestDTO));
@@ -37,6 +39,7 @@ public class AuthorController {
 
     // Read
     @GetMapping("/{idAuthor}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<AuthorResponseDTO> readAuthorController(@PathVariable String idAuthor) {
         try {
             return ResponseEntity.ok(authorService.getAuthorResponseDTOById(UUID.fromString(idAuthor)));
@@ -46,6 +49,7 @@ public class AuthorController {
     }
 
     @GetMapping("/list")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Author>> readAllAuthorsController() {
         try {
             return ResponseEntity.ok(authorService.getAllAuthors());
@@ -56,6 +60,7 @@ public class AuthorController {
 
     // Update
     @PatchMapping("/{idAuthor}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Author> updateAuthorController(@PathVariable String idAuthor,
             @RequestBody AuthorRequestDTO authorResquestDTO) {
         try {

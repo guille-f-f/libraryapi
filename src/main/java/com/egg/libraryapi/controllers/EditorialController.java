@@ -2,6 +2,7 @@ package com.egg.libraryapi.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -35,6 +36,7 @@ public class EditorialController {
 
     // Create
     @PostMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Map<String, String>> createEditorial(
             @RequestBody @Valid EditorialRequestDTO editorialRequestDTO) {
         try {
@@ -49,6 +51,7 @@ public class EditorialController {
 
     // Get by id
     @GetMapping("/{idEditorial}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<EditorialResponseDTO> getEditorialById(@PathVariable String idEditorial) {
         try {
             return ResponseEntity.ok(editorialService.getEditorialResponseDTOById(UUID.fromString(idEditorial)));
@@ -61,6 +64,7 @@ public class EditorialController {
 
     // Get all editorials
     @GetMapping
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Editorial>> getAllEditorials() {
         try {
             List<Editorial> editorials = editorialService.getAllEditorials();
@@ -72,6 +76,7 @@ public class EditorialController {
 
     // Get all actives editorials
     @GetMapping("/actives")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<EditorialResponseDTO>> getActivesEditorials() {
         try {
             List<EditorialResponseDTO> activesEditorials = editorialService.getActivesEditorials();
@@ -83,6 +88,7 @@ public class EditorialController {
 
     // Get all inactives editorials
     @GetMapping("/inactives")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Editorial>> getInactivesEditorials() {
         try {
             List<Editorial> inactivesEditorials = editorialService.getInactivesEditorials();
@@ -94,6 +100,7 @@ public class EditorialController {
     
     // Update
     @PatchMapping("/{idEditorial}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Editorial> renameEditorial(@PathVariable String idEditorial,
             @RequestBody EditorialRequestDTO editorialRequestDTO) {
         try {
@@ -106,6 +113,7 @@ public class EditorialController {
 
     // Delete
     @DeleteMapping("/deactivate/{idEditorial}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> deleteEditorial(@PathVariable String idEditorial) {
         try {
             editorialService.handleEditorialActivation(UUID.fromString(idEditorial));
@@ -116,6 +124,7 @@ public class EditorialController {
     }
 
     @DeleteMapping("/{idEditorial}")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<String> deleteEditorialById(@PathVariable String idEditorial) {
         try {
             editorialService.deleteEditorial(UUID.fromString(idEditorial));

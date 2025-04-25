@@ -81,13 +81,14 @@ public class JwtFilter extends OncePerRequestFilter {
                 String role = jwtUtil.extractRole(token);
                 
                 // 🔁 Convertir a una lista de GrantedAuthority
-                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
                 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
                         null, authorities);
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Context: " + SecurityContextHolder.getContext().getAuthentication());
             }
         }
 
