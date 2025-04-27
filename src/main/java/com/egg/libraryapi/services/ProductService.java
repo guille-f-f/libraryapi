@@ -24,4 +24,12 @@ public class ProductService {
                 .collectList() // Convertimos a List<ProductDTO>
                 .block(); // Esperamos la respuesta (síncrono)
     }
+
+    public ProductDTO getProduct(String idProduct) {
+        return webClient.get()
+                .uri("/products/" + idProduct) // Ruta relativa
+                .retrieve()
+                .bodyToMono(ProductDTO.class)
+                .block(); // Esperamos la respuesta (síncrono)
+    }
 }
