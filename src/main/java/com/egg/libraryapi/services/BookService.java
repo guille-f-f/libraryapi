@@ -4,8 +4,10 @@ import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.entities.Editorial;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
+import com.egg.libraryapi.models.AuthorResponseDTO;
 import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
+import com.egg.libraryapi.models.EditorialResponseDTO;
 import com.egg.libraryapi.repositories.BookRepository;
 
 import org.modelmapper.ModelMapper;
@@ -13,8 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class BookService {
@@ -37,6 +41,12 @@ public class BookService {
     @Transactional
     public Book createBook(BookRequestDTO bookRequestDTO) {
         Book book = modelMapper.map(bookRequestDTO, Book.class);
+        Editorial editorial = editorialService.getEditorialById(bookRequestDTO.getIdEditorial());
+        Author author = authorService.getAuthorById(bookRequestDTO.getIdAuthor());
+
+        book.setEditorial(editorial);
+        book.setAuthor(author);
+
         return bookRepository.save(book);
     }
 
@@ -53,8 +63,31 @@ public class BookService {
 
     // Read books
     @Transactional(readOnly = true)
-    public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+    public List<BookResponseDTO> getAllBooks() {
+        List<Book> books = bookRepository.findAll();
+        List<BookResponseDTO> bookResponseDTOs = new ArrayList<>();
+
+        for (Book book : books) {
+            bookResponseDTOs.add(
+                BookResponseDTO.builder()
+                    .isbn(book.getISBN())
+                    .bookTitle(book.getBookTitle())
+                    .specimens(book.getSpecimens())
+                    .editorialResponseDTO(
+                        EditorialResponseDTO.builder()
+                            .editorialName(book.getEditorial().getEditorialName())
+                            .build()
+                        )
+                    .authorResponseDTO(
+                        AuthorResponseDTO.builder()
+                            .authorName(book.getAuthor().getAuthorName())
+                            .build()   
+                    )
+                    .build()
+            );
+        }
+
+        return bookResponseDTOs;
     }
 
     // Read books by editorial

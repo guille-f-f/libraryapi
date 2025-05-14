@@ -71,14 +71,14 @@ public class BookController {
     // Read all
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Book>> listBooks() {
-        List<Book> books = bookService.getAllBooks();
+    public ResponseEntity<List<BookResponseDTO>> listBooks() {
+        List<BookResponseDTO> books = bookService.getAllBooks();
         if (books.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(books);
     }
-    
+
     // Active list
     @GetMapping("/active")
     @PreAuthorize("hasRole('USER')")

@@ -7,6 +7,9 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class BookResponseDTO {
+    private Long isbn;
     private String bookTitle;
     private Integer specimens;
+    private EditorialResponseDTO editorialResponseDTO;
+    private AuthorResponseDTO authorResponseDTO;
 }

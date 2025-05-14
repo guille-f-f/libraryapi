@@ -48,9 +48,10 @@ public class AuthorController {
         }
     }
 
-    @GetMapping("/list")
-    @PreAuthorize("hasRole('USER')")
+    @GetMapping
+    // @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<Author>> readAllAuthorsController() {
+        System.out.println("Listando autores...");
         try {
             return ResponseEntity.ok(authorService.getAllAuthors());
         } catch (Exception e) {

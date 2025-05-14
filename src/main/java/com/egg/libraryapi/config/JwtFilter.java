@@ -53,7 +53,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
-        System.out.println(authHeader);
+        System.out.println("Header: " + authHeader);
         // Si está presente y comienza con "Bearer ", lo recorta.
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
