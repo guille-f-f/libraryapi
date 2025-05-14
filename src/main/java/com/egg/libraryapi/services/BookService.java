@@ -68,23 +68,7 @@ public class BookService {
         List<BookResponseDTO> bookResponseDTOs = new ArrayList<>();
 
         for (Book book : books) {
-            bookResponseDTOs.add(
-                BookResponseDTO.builder()
-                    .isbn(book.getISBN())
-                    .bookTitle(book.getBookTitle())
-                    .specimens(book.getSpecimens())
-                    .editorialResponseDTO(
-                        EditorialResponseDTO.builder()
-                            .editorialName(book.getEditorial().getEditorialName())
-                            .build()
-                        )
-                    .authorResponseDTO(
-                        AuthorResponseDTO.builder()
-                            .authorName(book.getAuthor().getAuthorName())
-                            .build()   
-                    )
-                    .build()
-            );
+            bookResponseDTOs.add(mapToDTO(book));
         }
 
         return bookResponseDTOs;
@@ -156,6 +140,20 @@ public class BookService {
             book.setAuthor(author);
         }
         return book;
+    }
+    
+    private BookResponseDTO mapToDTO(Book book) {
+        return BookResponseDTO.builder()
+                .isbn(book.getISBN())
+                .bookTitle(book.getBookTitle())
+                .specimens(book.getSpecimens())
+                .editorialResponseDTO(book.getEditorial() != null ? EditorialResponseDTO.builder()
+                        .editorialName(book.getEditorial().getEditorialName())
+                        .build() : null)
+                .authorResponseDTO(book.getAuthor() != null ? AuthorResponseDTO.builder()
+                        .authorName(book.getAuthor().getAuthorName())
+                        .build() : null)
+                .build();
     }
 
 }
