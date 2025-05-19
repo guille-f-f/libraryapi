@@ -36,15 +36,12 @@ public class EditorialController {
     // Create
     @PostMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<EditorialResponseDTO> createEditorial(
+    public ResponseEntity<Editorial> createEditorial(
             @RequestBody @Valid EditorialRequestDTO editorialRequestDTO) {
         try {
             System.out.println("Ingresamos");
-            Editorial editorial = editorialService.createEditorial(editorialRequestDTO);
-            EditorialResponseDTO editorialResponseDTO = EditorialResponseDTO.builder()
-                .editorialName(editorial.getEditorialName())
-                .build();
-            return ResponseEntity.ok(editorialResponseDTO);
+            Editorial editorialEntity = editorialService.createEditorial(editorialRequestDTO);
+            return ResponseEntity.ok(editorialEntity);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
