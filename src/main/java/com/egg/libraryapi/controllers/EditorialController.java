@@ -37,15 +37,17 @@ public class EditorialController {
     // Create
     @PostMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<Map<String, String>> createEditorial(
+    public ResponseEntity<EditorialResponseDTO> createEditorial(
             @RequestBody @Valid EditorialRequestDTO editorialRequestDTO) {
         try {
-            editorialService.createEditorial(editorialRequestDTO);
-            Map<String, String> response = Map.of("message", "Editorial created successfully.");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            System.out.println("Ingresamos");
+            Editorial editorial = editorialService.createEditorial(editorialRequestDTO);
+            EditorialResponseDTO editorialResponseDTO = EditorialResponseDTO.builder()
+                .editorialName(editorial.getEditorialName())
+                .build();
+            return ResponseEntity.ok(editorialResponseDTO);
         } catch (Exception e) {
-            Map<String, String> errorResponse = Map.of("error", "Failed to create editorial: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -97,7 +99,7 @@ public class EditorialController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
     // Update
     @PatchMapping("/{idEditorial}")
     @PreAuthorize("hasRole('USER')")
