@@ -31,4 +31,9 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody AuthRequestDTO request) {
         return authService.registerService(request);
     }
+
+    @PostMapping("/validate")
+    public boolean validateToken(@Request ) {
+        return true;
+    }
 }
