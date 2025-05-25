@@ -1,5 +1,7 @@
 package com.egg.libraryapi.controllers;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,9 +34,9 @@ public class AuthController {
         return authService.registerService(request);
     }
 
-    @PostMapping("/validate")
-    public ResponseEntity<Boolean> validateToken() {
-        System.out.println("Ingresamos al controlador: validateToken()");
-        return ResponseEntity.ok(true);
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshAccessToken(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+        return authService.refreshAccessTokenService(refreshToken);
     }
 }

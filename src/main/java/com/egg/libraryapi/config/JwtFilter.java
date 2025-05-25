@@ -17,6 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.egg.libraryapi.services.CustomUserDetailsService;
 import com.egg.libraryapi.utils.JwtUtil;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,13 +55,37 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
         System.out.println("Header: " + authHeader);
+
+        String path = request.getRequestURI();
+
+        if (path.startsWith("/auth/")) {
+            System.out.println("Ruta: " + path);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         // Si está presente y comienza con "Bearer ", lo recorta.
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            boolean tokenIsExpired = jwtUtil.isTokenExpired(token);
-            System.out.println("Token expirado: " + tokenIsExpired);
-            // Extrae el username del token usando jwtUtil.
-            username = jwtUtil.extractUsername(token);
+
+            // Valida si el token se encuentra expirado, en caso que esté expirado finaliza
+            // el filtro seteando el codigo de estado, y escribirendo el cuerpo de respuesta
+            try {
+                boolean tokenIsExpired = jwtUtil.isTokenExpired(token);
+                System.out.println("Token expirado: " + tokenIsExpired);
+
+                if (tokenIsExpired) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Token expirado");
+                    return;
+                }
+
+                username = jwtUtil.extractUsername(token);
+            } catch (JwtException e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token inválido: " + e.getMessage());
+                return;
+            }
         }
 
         System.out.println("Token: " + token + "\nUsername: " + username);
