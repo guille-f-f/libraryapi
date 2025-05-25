@@ -42,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        System.out.println("JwtFilter.doFilterInternal");
+        System.out.println("Ingresamos a: JwtFilter.doFilterInternal");
         // request: es el objeto HTTP que entra.
         // response: es el objeto HTTP que se devolverá.
         // filterChain: es el flujo que permite continuar con los filtros siguientes (o
@@ -57,9 +57,13 @@ public class JwtFilter extends OncePerRequestFilter {
         // Si está presente y comienza con "Bearer ", lo recorta.
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+            boolean tokenIsExpired = jwtUtil.isTokenExpired(token);
+            System.out.println("Token expirado: " + tokenIsExpired);
             // Extrae el username del token usando jwtUtil.
             username = jwtUtil.extractUsername(token);
         }
+
+        System.out.println("Token: " + token + "\nUsername: " + username);
 
         // Si hay un username y el usuario aún no está autenticado
         // Verifica que el token contenía un usuario.
@@ -79,10 +83,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
             if (jwtUtil.isTokenValid(token, userDetails)) {
                 String role = jwtUtil.extractRole(token);
-                
+
                 // 🔁 Convertir a una lista de GrantedAuthority
                 List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
-                
+
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
                         null, authorities);
 

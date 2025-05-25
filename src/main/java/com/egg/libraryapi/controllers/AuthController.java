@@ -33,7 +33,8 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public boolean validateToken(@Request ) {
-        return true;
+    public ResponseEntity<Boolean> validateToken() {
+        System.out.println("Ingresamos al controlador: validateToken()");
+        return ResponseEntity.ok(true);
     }
 }
