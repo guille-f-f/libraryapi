@@ -42,10 +42,11 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .logout(logout -> logout.logoutUrl("/auth/logout")
-                        .logoutSuccessHandler(
-                                (request, response, authentication) -> SecurityContextHolder.clearContext()));
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                // Se delega al controlador
+                // .logout(logout -> logout.logoutUrl("/auth/logout")
+                //         .logoutSuccessHandler(
+                //                 (request, response, authentication) -> SecurityContextHolder.clearContext()));
 
         return http.build();
     }

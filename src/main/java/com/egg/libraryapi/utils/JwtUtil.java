@@ -1,6 +1,9 @@
 package com.egg.libraryapi.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
+
+import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,6 +13,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
@@ -23,13 +27,17 @@ public class JwtUtil {
     @Value("${jwt.refreshTokenExpiration}")
     private long refreshTokenExpiration;
 
+    private SecretKey getSigningKey() {
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+    }
+
     public String generateAccessToken(String username, String role) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + accessTokenExpiration))
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -39,13 +47,14 @@ public class JwtUtil {
                 .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + refreshTokenExpiration))
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public String extractUsername(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
@@ -64,35 +73,37 @@ public class JwtUtil {
     public boolean isTokenExpired(String token) {
         System.out.println("Ingresamos a: JwtUtil.isTokenExpired");
         try {
-            Date expiration = Jwts.parser()
-                    .setSigningKey(secret)
+            Date expiration = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
                     .parseClaimsJws(token)
                     .getBody()
                     .getExpiration();
-
-            boolean isExpired = expiration.before(new Date());
-
-            if (isExpired) {
-                System.out.println("Token expirado");
-            } else {
-                System.out.println("Token NO expirado");
-            }
-
-            return isExpired;
+            return expiration.before(new Date());
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            System.out.println("Token realmente expirado (excepción lanzada)");
+            System.out.println("Token expired");
             return true;
         } catch (JwtException | IllegalArgumentException e) {
-            System.out.println("Error en el token: " + e.getMessage());
-            return true; // Tratamos todo token inválido como expirado o inválido
+            System.out.println("Token error: " + e.getMessage());
+            return true;
         }
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secret)
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public Date extractExpiration(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .getExpiration();
     }
 
     public boolean isRefreshTokenValid(String refreshToken, UserDetails userDetails) {

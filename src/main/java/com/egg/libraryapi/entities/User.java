@@ -27,4 +27,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role = Role.ROLE_USER;
 
+    
+    private String refreshToken;
 }

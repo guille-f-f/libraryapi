@@ -1,5 +1,9 @@
 package com.egg.libraryapi.services;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
 
@@ -9,16 +13,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.egg.libraryapi.entities.RefreshToken;
 import com.egg.libraryapi.entities.User;
+import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.AuthRequestDTO;
 import com.egg.libraryapi.models.AuthResponseDTO;
+import com.egg.libraryapi.repositories.RefreshTokenRepository;
 import com.egg.libraryapi.repositories.UserRepository;
 import com.egg.libraryapi.utils.JwtUtil;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -26,6 +35,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AuthService {
 
     private UserRepository userRepository;
+    private RefreshTokenRepository refreshTokenRepository;
     private PasswordEncoder passwordEncoder;
     private AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
@@ -33,15 +43,18 @@ public class AuthService {
 
     @Autowired
     public AuthService(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder,
-            AuthenticationManager authenticationManager, CustomUserDetailsService userDetailsService) {
+            AuthenticationManager authenticationManager, CustomUserDetailsService userDetailsService,
+            RefreshTokenRepository refreshTokenRepository) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     // Login
+    @Transactional(readOnly = true)
     public ResponseEntity<?> loginService(AuthRequestDTO request) {
         try {
             authenticationManager.authenticate(
@@ -61,12 +74,29 @@ public class AuthService {
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name()); // El de larga
                                                                                                        // duración
 
+        // Guardar el refresh token
+        RefreshToken refreshTokenDDBB = new RefreshToken();
+        refreshTokenDDBB.setRefreshToken(refreshToken);
+        refreshTokenDDBB.setUser(user);
+        refreshTokenDDBB.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant()); // si usás fecha de
+                                                                                             // expiración
+
+        refreshTokenRepository.save(refreshTokenDDBB);
+
         // AuthResponseDTO response = new AuthResponseDTO(token, "Login exitoso");
         AuthResponseDTO response = new AuthResponseDTO(accessToken, refreshToken, "Login exitoso");
         return ResponseEntity.ok(response);
     }
 
+    // Logout
+    @Transactional
+    public void logout(String token) {
+        SecurityContextHolder.clearContext();
+        refreshTokenRepository.deleteByRefreshToken(token);
+    }
+
     // Register
+    @Transactional
     public ResponseEntity<?> registerService(AuthRequestDTO request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("The user already exists");
@@ -83,29 +113,73 @@ public class AuthService {
     }
 
     // Refresh token
-    public ResponseEntity<?> refreshAccessTokenService(String refreshToken) {
-        if (refreshToken == null) {
-            return ResponseEntity.badRequest().body("Refresh token requerido");
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> refreshAccessTokenService(String requestRefreshToken) {
+        if (requestRefreshToken == null) {
+            return ResponseEntity.badRequest().body("Refresh token is null");
+        }
+
+        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(requestRefreshToken);
+        if (refreshTokenOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token no encontrado");
+        }
+
+        RefreshToken refreshToken = refreshTokenOpt.get();
+
+        if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
         }
 
         try {
-            System.out.println("refreshAccessTokenService: Refresh Token " + refreshToken);
-            String username = jwtUtil.extractUsername(refreshToken);
-
-            if (jwtUtil.isTokenExpired(refreshToken)) {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Refresh token expirado");
+            String username = null;
+            try {
+                username = jwtUtil.extractUsername(refreshToken.getRefreshToken());
+            } catch (ExpiredJwtException e) {
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Token expired");
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Invalid token");
             }
 
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            String newAccessToken = jwtUtil.generateAccessToken(userDetails.getUsername(),
-                    userDetails.getAuthorities().iterator().next().getAuthority());
-            return ResponseEntity.ok(Map.of(
-                    "accessToken", newAccessToken));
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+
+            if (!isStoredAndValid(user, refreshToken.getRefreshToken())) {
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                        .body("Refresh token inválido o no coincide");
+            }
+
+            String newAccessToken = jwtUtil.generateAccessToken(
+                    user.getUsername(),
+                    user.getRole().name());
+
+            return ResponseEntity.ok(Map.of("accessToken", newAccessToken));
 
         } catch (JwtException e) {
-            System.out.println("Error parseando refresh token: " + e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Refresh token inválido");
+            System.out.println("Error parsing refresh token: " + e.getMessage());
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Invalid token refresh");
         }
+    }
+
+    // Validate token
+    public boolean validateToken(String token) {
+        return jwtUtil.isTokenValid(token, userDetailsService.loadUserByUsername(jwtUtil.extractUsername(token)));
+    }
+
+    // =======================
+    // Private methods
+    // =======================
+
+    private boolean isStoredAndValid(User user, String refreshToken) {
+        Optional<RefreshToken> storedToken = refreshTokenRepository.findByUser(user);
+
+        System.out.println("USUARIO: " + user);
+        System.out.println("TOKEN ALMACENADO: " + storedToken);
+
+        return storedToken.isPresent() &&
+                storedToken.get().getRefreshToken().equals(refreshToken) &&
+                storedToken.get().getExpiryDate()
+                        .isAfter(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant());
     }
 
 }
