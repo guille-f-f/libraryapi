@@ -1,5 +1,6 @@
 package com.egg.libraryapi.services;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,7 +9,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,20 +82,31 @@ public class AuthService {
         refreshTokenDDBB.setRefreshToken(refreshToken);
         refreshTokenDDBB.setUser(user);
         refreshTokenDDBB.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant()); // si usás fecha de
-                                                                                             // expiración
 
         refreshTokenRepository.save(refreshTokenDDBB);
 
-        // AuthResponseDTO response = new AuthResponseDTO(token, "Login exitoso");
-        AuthResponseDTO response = new AuthResponseDTO(accessToken, refreshToken, "Login exitoso");
-        return ResponseEntity.ok(response);
+        AuthResponseDTO response = new AuthResponseDTO(accessToken, "Successful login");
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(true) // solo por HTTPS
+                // .secure(false) // solo en desarrollo utilizamos .secure(false)
+                .path("/")
+                .maxAge(Duration.ofDays(7))
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body(response);
+        
     }
 
     // Logout
     @Transactional
-    public void logout(String token) {
+    public void logout(String refreshToken) {
         SecurityContextHolder.clearContext();
-        refreshTokenRepository.deleteByRefreshToken(token);
+        refreshTokenRepository.deleteByRefreshToken(refreshToken);
     }
 
     // Register

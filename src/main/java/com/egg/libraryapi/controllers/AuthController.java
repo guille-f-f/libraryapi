@@ -1,9 +1,8 @@
 package com.egg.libraryapi.controllers;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -31,7 +30,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestBody RefreshTokenRequestDTO request) {
+    public ResponseEntity<?> logout(@CookieValue RefreshTokenRequestDTO request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.ok("Sesión cerrada exitosamente");
     }
@@ -42,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshAccessToken(@RequestBody RefreshTokenRequestDTO request) {
+    public ResponseEntity<?> refreshAccessToken(@CookieValue RefreshTokenRequestDTO request) {
         String refreshToken = request.getRefreshToken();
         return authService.refreshAccessTokenService(refreshToken);
     }
