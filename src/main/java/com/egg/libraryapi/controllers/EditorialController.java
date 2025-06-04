@@ -3,7 +3,6 @@ package com.egg.libraryapi.controllers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,7 +16,6 @@ import com.egg.libraryapi.entities.Editorial;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.EditorialRequestDTO;
 import com.egg.libraryapi.models.EditorialResponseDTO;
-import com.egg.libraryapi.models.RefreshTokenRequestDTO;
 import com.egg.libraryapi.services.EditorialService;
 
 import jakarta.validation.Valid;
@@ -65,15 +63,10 @@ public class EditorialController {
     // Get all editorials
     @GetMapping
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<List<Editorial>> getAllEditorials(@CookieValue RefreshTokenRequestDTO request) {
-        
-        
-        // Validamos si recibimos la cookie con el refreshToken
-        System.out.println("LLEGO EL REFRESH TOKEN?, acá te lo digo: " + request.getRefreshToken());
+    public ResponseEntity<List<Editorial>> getAllEditorials() {
 
-        
-        
-        
+        System.out.println("Entramos a getAllEditorials...");
+
         try {
             List<Editorial> editorials = editorialService.getAllEditorials();
             return ResponseEntity.ok(editorials);

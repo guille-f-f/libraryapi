@@ -2,7 +2,6 @@ package com.egg.libraryapi.services;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +26,7 @@ import com.egg.libraryapi.entities.User;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.AuthRequestDTO;
 import com.egg.libraryapi.models.AuthResponseDTO;
+import com.egg.libraryapi.models.LoginResultDTO;
 import com.egg.libraryapi.repositories.RefreshTokenRepository;
 import com.egg.libraryapi.repositories.UserRepository;
 import com.egg.libraryapi.utils.JwtUtil;
@@ -57,49 +58,25 @@ public class AuthService {
     }
 
     // Login
-    @Transactional(readOnly = true)
-    public ResponseEntity<?> loginService(AuthRequestDTO request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
-        }
+    @Transactional
+    public LoginResultDTO loginService(AuthRequestDTO request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        Optional<User> userOpt = userRepository.findByUsername(request.getUsername());
-        if (userOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        }
-
-        User user = userOpt.get();
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
         String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name()); // El de larga
-                                                                                                       // duración
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
 
-        // Guardar el refresh token
         RefreshToken refreshTokenDDBB = new RefreshToken();
         refreshTokenDDBB.setRefreshToken(refreshToken);
         refreshTokenDDBB.setUser(user);
-        refreshTokenDDBB.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant()); // si usás fecha de
+        refreshTokenDDBB.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant());
 
         refreshTokenRepository.save(refreshTokenDDBB);
 
-        AuthResponseDTO response = new AuthResponseDTO(accessToken, "Successful login");
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true) // solo por HTTPS
-                // .secure(false) // solo en desarrollo utilizamos .secure(false)
-                .path("/")
-                .maxAge(Duration.ofDays(7))
-                .sameSite("Strict")
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body(response);
-        
+        return new LoginResultDTO(accessToken, refreshToken);
     }
 
     // Logout
@@ -134,12 +111,12 @@ public class AuthService {
         }
 
         Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(requestRefreshToken);
+
         if (refreshTokenOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token no encontrado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token not found");
         }
 
         RefreshToken refreshToken = refreshTokenOpt.get();
-
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
@@ -160,7 +137,7 @@ public class AuthService {
 
             if (!isStoredAndValid(user, refreshToken.getRefreshToken())) {
                 return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
-                        .body("Refresh token inválido o no coincide");
+                        .body("Refresh token invalid or mismatch");
             }
 
             String newAccessToken = jwtUtil.generateAccessToken(
