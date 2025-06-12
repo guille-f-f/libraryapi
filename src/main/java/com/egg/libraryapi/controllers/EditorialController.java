@@ -1,5 +1,6 @@
 package com.egg.libraryapi.controllers;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import com.egg.libraryapi.services.EditorialService;
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -115,7 +117,7 @@ public class EditorialController {
     // Delete
     @DeleteMapping("/deactivate/{idEditorial}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteEditorial(@PathVariable String idEditorial) {
+    public ResponseEntity<String> disableEditorial(@PathVariable String idEditorial) {
         try {
             editorialService.handleEditorialActivation(UUID.fromString(idEditorial));
             return ResponseEntity.ok("Delete editorial successfully.");
@@ -126,13 +128,18 @@ public class EditorialController {
 
     @DeleteMapping("/{idEditorial}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> deleteEditorialById(@PathVariable String idEditorial) {
+    public ResponseEntity<Map<String, String>> deleteEditorialById(@PathVariable String idEditorial) {
         try {
             editorialService.deleteEditorial(UUID.fromString(idEditorial));
-            return ResponseEntity.ok("Editorial deleted successfully.");
+            return ResponseEntity.ok(Map.of("Message", "Editorial deleted successfully."));
+        } catch (DataIntegrityViolationException e) {
+            System.out.println("\nERROR!, there are other entities that depend on this");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("error", "Failed to delete editorial, there are other entities that depend on this: "
+                            + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to delete editorial: " + e.getMessage());
+                    .body(Map.of("Error", "Failed to delete editorial: " + e.getMessage()));
         }
     }
 

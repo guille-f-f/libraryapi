@@ -107,19 +107,23 @@ public class AuthService {
     @Transactional(readOnly = true)
     public ResponseEntity<?> refreshAccessTokenService(String requestRefreshToken) {
         if (requestRefreshToken == null) {
-            return ResponseEntity.badRequest().body("Refresh token is null");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Refresh token is null"));
         }
 
         Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByRefreshToken(requestRefreshToken);
 
         if (refreshTokenOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token not found");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Refresh token not found"));
         }
 
         RefreshToken refreshToken = refreshTokenOpt.get();
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Refresh token expired"));
         }
 
         try {
@@ -127,9 +131,11 @@ public class AuthService {
             try {
                 username = jwtUtil.extractUsername(refreshToken.getRefreshToken());
             } catch (ExpiredJwtException e) {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Token expired");
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                        .body(Map.of("error", "Token expired"));
             } catch (Exception e) {
-                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Invalid token");
+                return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                        .body(Map.of("error", "Invalid token"));
             }
 
             User user = userRepository.findByUsername(username)
@@ -137,7 +143,7 @@ public class AuthService {
 
             if (!isStoredAndValid(user, refreshToken.getRefreshToken())) {
                 return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
-                        .body("Refresh token invalid or mismatch");
+                        .body(Map.of("error", "Refresh token invalid or mismatch"));
             }
 
             String newAccessToken = jwtUtil.generateAccessToken(
@@ -148,7 +154,8 @@ public class AuthService {
 
         } catch (JwtException e) {
             System.out.println("Error parsing refresh token: " + e.getMessage());
-            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED).body("Invalid token refresh");
+            return ResponseEntity.status(HttpServletResponse.SC_UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid token refresh"));
         }
     }
 
