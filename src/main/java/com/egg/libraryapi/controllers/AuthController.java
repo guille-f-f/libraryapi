@@ -1,6 +1,7 @@
 package com.egg.libraryapi.controllers;
 
 import java.time.Duration;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -95,25 +96,25 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String authHeader) {
+    public ResponseEntity<Map<String, Object>> validateToken(@RequestHeader("Authorization") String authHeader) {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
             try {
                 if (authService.validateToken(token)) {
-                    return ResponseEntity.ok().build();
+                    return ResponseEntity.ok(Map.of("valid", true));
                 } else {
-                    return ResponseEntity.status(401).build();
+                    return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
                 }
             } catch (ExpiredJwtException e) {
                 System.out.println("Expired token: " + e.getMessage());
-                return ResponseEntity.status(401).build();
+                return ResponseEntity.status(401).body(Map.of("error", "Token expired"));
             } catch (JwtException e) {
                 System.out.println("Invalid token: " + e.getMessage());
-                return ResponseEntity.status(401).build();
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid token"));
             }
         }
 
-git com        return ResponseEntity.status(401).build();
+        return ResponseEntity.status(400).body(Map.of("error", "Authorization header is missing or malformed"));
     }
 
 }
