@@ -117,12 +117,13 @@ public class EditorialController {
     // Delete
     @DeleteMapping("/deactivate/{idEditorial}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<String> disableEditorial(@PathVariable String idEditorial) {
+    public ResponseEntity<Map<String, String>> disableEditorial(@PathVariable String idEditorial) {
         try {
             editorialService.handleEditorialActivation(UUID.fromString(idEditorial));
-            return ResponseEntity.ok("Delete editorial successfully.");
+            return ResponseEntity.ok(Map.of("Message", "Editorial state update successfully."));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("Error", "Failed to update editorial state: " + e.getMessage()));
         }
     }
 
