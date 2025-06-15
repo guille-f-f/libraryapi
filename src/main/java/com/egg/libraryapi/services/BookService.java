@@ -14,7 +14,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,14 +25,17 @@ import java.util.UUID;
 public class BookService {
 
     private BookRepository bookRepository;
+    private FileStorageService fileStorageService;
     private AuthorService authorService;
     private EditorialService editorialService;
     private ModelMapper modelMapper;
 
     @Autowired
-    public BookService(BookRepository bookRepository, AuthorService authorService, EditorialService editorialService,
+    public BookService(BookRepository bookRepository, FileStorageService fileStorageService,
+            AuthorService authorService, EditorialService editorialService,
             ModelMapper modelMapper) {
         this.bookRepository = bookRepository;
+        this.fileStorageService = fileStorageService;
         this.authorService = authorService;
         this.editorialService = editorialService;
         this.modelMapper = modelMapper;
@@ -47,6 +52,16 @@ public class BookService {
         book.setAuthor(author);
 
         return bookRepository.save(book);
+    }
+
+    // Upload image
+    @Transactional
+    public String uploadAndSetImage(Long isbn, MultipartFile file) throws IOException {
+        String imageUrl = fileStorageService.storeBookImage(isbn, file);
+        Book book = getBookOrThrow(isbn);
+        book.setImageUrl(imageUrl);
+        bookRepository.save(book);
+        return imageUrl;
     }
 
     // Read by id
@@ -140,12 +155,13 @@ public class BookService {
         }
         return book;
     }
-    
+
     private BookResponseDTO mapToDTO(Book book) {
         return BookResponseDTO.builder()
                 .isbn(book.getISBN())
                 .bookTitle(book.getBookTitle())
                 .specimens(book.getSpecimens())
+                .imageUrl(book.getImageUrl())
                 .editorialResponseDTO(book.getEditorial() != null ? EditorialResponseDTO.builder()
                         .editorialName(book.getEditorial().getEditorialName())
                         .build() : null)

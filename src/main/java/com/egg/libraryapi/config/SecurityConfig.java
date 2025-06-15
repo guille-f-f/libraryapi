@@ -36,16 +36,17 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(req -> req.requestMatchers("/auth/**")
+                .authorizeHttpRequests(req -> req.requestMatchers("/auth/**", "/uploads/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-                // Se delega al controlador
-                // .logout(logout -> logout.logoutUrl("/auth/logout")
-                //         .logoutSuccessHandler(
-                //                 (request, response, authentication) -> SecurityContextHolder.clearContext()));
+        // Se delega al controlador
+        // .logout(logout -> logout.logoutUrl("/auth/logout")
+        // .logoutSuccessHandler(
+        // (request, response, authentication) ->
+        // SecurityContextHolder.clearContext()));
 
         return http.build();
     }
