@@ -24,4 +24,17 @@ public class FileStorageService {
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         return "/uploads/images/books/" + fileName;
     }
+
+    public void deleteImageIfExists(String imageUrl) throws IOException {
+        if (imageUrl == null || imageUrl.isBlank())
+            return;
+
+        // Elimina el prefijo "/uploads/images/books/" del path
+        String fileName = Path.of(imageUrl).getFileName().toString();
+        Path imagePath = Paths.get(uploadDir).resolve(fileName);
+
+        if (Files.exists(imagePath)) {
+            Files.delete(imagePath);
+        }
+    }
 }

@@ -57,8 +57,11 @@ public class BookService {
     // Upload image
     @Transactional
     public String uploadAndSetImage(Long isbn, MultipartFile file) throws IOException {
-        String imageUrl = fileStorageService.storeBookImage(isbn, file);
         Book book = getBookOrThrow(isbn);
+        if (book.getImageUrl() != null && !book.getImageUrl().isBlank()) {
+            fileStorageService.deleteImageIfExists(book.getImageUrl());
+        }
+        String imageUrl = fileStorageService.storeBookImage(isbn, file);
         book.setImageUrl(imageUrl);
         bookRepository.save(book);
         return imageUrl;
