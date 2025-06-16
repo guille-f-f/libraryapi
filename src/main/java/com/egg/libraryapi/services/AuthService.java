@@ -1,6 +1,5 @@
 package com.egg.libraryapi.services;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,13 +7,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,7 +21,6 @@ import com.egg.libraryapi.entities.RefreshToken;
 import com.egg.libraryapi.entities.User;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.AuthRequestDTO;
-import com.egg.libraryapi.models.AuthResponseDTO;
 import com.egg.libraryapi.models.LoginResultDTO;
 import com.egg.libraryapi.repositories.RefreshTokenRepository;
 import com.egg.libraryapi.repositories.UserRepository;
