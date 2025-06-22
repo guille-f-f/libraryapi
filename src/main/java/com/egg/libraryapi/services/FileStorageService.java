@@ -13,6 +13,9 @@ public class FileStorageService {
     @Value("${app.upload.book-images-path:uploads/images/books}")
     private String uploadDir;
 
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
     public String storeBookImage(Long isbn, MultipartFile file) throws IOException {
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {

@@ -142,15 +142,15 @@ public class BookService {
     // Private methods
     // =======================
 
-    private Book getBookOrThrow(Long ISBN) {
-        return bookRepository.findById(ISBN).orElseThrow(
-                () -> new ObjectNotFoundException("Book with ISBN " + ISBN + " not found."));
+    private Book getBookOrThrow(Long isbn) {
+        return bookRepository.findById(isbn).orElseThrow(
+                () -> new ObjectNotFoundException("Book with isbn " + isbn + " not found."));
     }
 
     // Mapping the book object with the request data
-    private Book populateBook(Book book, Long ISBN, String bookName, Integer specimens, UUID idAuthor,
+    private Book populateBook(Book book, Long isbn, String bookName, Integer specimens, UUID idAuthor,
             UUID idEditorial) {
-        book.setISBN(ISBN);
+        book.setIsbn(isbn);
         book.setBookTitle(bookName);
         book.setSpecimens(specimens);
         Editorial editorial = editorialService.getEditorialById(idEditorial);
