@@ -12,7 +12,7 @@ import lombok.*;
 public class Book {
     @Id
     @Column(name = "isbn")
-    private Long ISBN;
+    private Long isbn;
 
     @Column(name = "book_active")
     private Boolean bookActive;

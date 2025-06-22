@@ -56,7 +56,7 @@ public class BookService {
         BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
         bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(), EditorialResponseDTO.class));
         bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(), AuthorResponseDTO.class));
-        
+
         return bookDTO;
     }
 
@@ -167,7 +167,7 @@ public class BookService {
 
     private BookResponseDTO mapToDTO(Book book) {
         return BookResponseDTO.builder()
-                .isbn(book.getISBN())
+                .isbn(book.getIsbn())
                 .bookTitle(book.getBookTitle())
                 .specimens(book.getSpecimens())
                 .imageUrl(book.getImageUrl())
