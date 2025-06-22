@@ -131,7 +131,7 @@ public class EditorialController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<Map<String, String>> deleteEditorialById(@PathVariable String idEditorial) {
         try {
-            editorialService.deleteEditorial(UUID.fromString(idEditorial));
+            editorialService.deleteEditorialById(UUID.fromString(idEditorial));
             return ResponseEntity.ok(Map.of("Message", "Editorial deleted successfully."));
         } catch (DataIntegrityViolationException e) {
             System.out.println("\nERROR!, there are other entities that depend on this");

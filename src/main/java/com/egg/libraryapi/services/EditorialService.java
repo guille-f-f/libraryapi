@@ -73,7 +73,7 @@ public class EditorialService {
         return editorial;
     }
 
-    public void deleteEditorial(UUID idEditorial) throws DataIntegrityViolationException {
+    public void deleteEditorialById(UUID idEditorial) throws DataIntegrityViolationException {
         Editorial editorial = getEditorialOrThrow(idEditorial);
         editorialRepository.delete(editorial);
     }

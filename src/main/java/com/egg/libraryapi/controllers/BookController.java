@@ -1,7 +1,7 @@
 package com.egg.libraryapi.controllers;
 
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
@@ -22,6 +23,7 @@ import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.services.BookService;
 import com.egg.libraryapi.services.EditorialService;
+import com.egg.libraryapi.services.FileStorageService;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -30,26 +32,51 @@ import jakarta.validation.constraints.NotBlank;
 @RequestMapping("/books")
 public class BookController {
     private BookService bookService;
+    private FileStorageService fileStorageService;
 
     @Autowired
-    public BookController(BookService bookService, EditorialService editorialService) {
+    public BookController(BookService bookService, EditorialService editorialService,
+            FileStorageService fileStorageService) {
         this.bookService = bookService;
+        this.fileStorageService = fileStorageService;
     }
 
     // Create
     @PostMapping
-    public ResponseEntity<Map<String, String>> createBook(@RequestBody @Valid BookRequestDTO bookCreateDTO) {
+    public ResponseEntity<Book> createBook(@RequestBody @Valid BookRequestDTO bookCreateDTO) {
         try {
-            Book book = bookService.createBook(bookCreateDTO);
-            Map<String, String> response = Map.of("message", "Book created successfully.", "book", book.toString());
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            Book bookEntity = bookService.createBook(bookCreateDTO);
+            return ResponseEntity.ok(bookEntity);
         } catch (Exception e) {
-            Map<String, String> errorResponse = Map.of("error", "Failed to create book: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    // Read by id
+
+    // Create with image
+    @PostMapping("/create-with-image")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> createBookWithImage(
+            @RequestParam("isbn") Long isbn,
+            @RequestParam("bookTitle") String bookTitle,
+            @RequestParam("bookActive") Boolean bookActive,
+            @RequestParam("specimens") Integer specimens,
+            @RequestParam("idEditorial") UUID idEditorial,
+            @RequestParam("idAuthor") UUID idAuthor,
+            @RequestParam(value = "file", required = false) MultipartFile file) {
+        try {
+            // Lógica de guardado de imagen si existe
+            String imageUrl = file != null ? fileStorageService.storeBookImage(isbn, file) : "";
+            // Lógica de creación del libro
+            BookRequestDTO dto = new BookRequestDTO(isbn, bookActive, bookTitle, specimens, imageUrl, idEditorial,
+                    idAuthor);
+            bookService.createBook(dto);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
+        }
+    }
+
+    // Read by isbn
     @GetMapping("/{isbn}")
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookResponseDTO> getBookByIsbn(@PathVariable Long isbn) {
@@ -67,7 +94,7 @@ public class BookController {
         }
         return ResponseEntity.ok(book);
     }
-    
+
     // Read all
     @GetMapping
     @PreAuthorize("hasRole('USER')")
