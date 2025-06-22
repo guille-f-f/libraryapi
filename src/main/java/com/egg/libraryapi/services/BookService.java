@@ -43,7 +43,7 @@ public class BookService {
 
     // Create
     @Transactional
-    public Book createBook(BookRequestDTO bookRequestDTO) {
+    public BookResponseDTO createBook(BookRequestDTO bookRequestDTO) {
         Book book = modelMapper.map(bookRequestDTO, Book.class);
         Editorial editorial = editorialService.getEditorialById(bookRequestDTO.getIdEditorial());
         Author author = authorService.getAuthorById(bookRequestDTO.getIdAuthor());
@@ -51,7 +51,13 @@ public class BookService {
         book.setEditorial(editorial);
         book.setAuthor(author);
 
-        return bookRepository.save(book);
+        bookRepository.save(book);
+
+        BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
+        bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(), EditorialResponseDTO.class));
+        bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(), AuthorResponseDTO.class));
+        
+        return bookDTO;
     }
 
     // Upload image

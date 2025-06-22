@@ -1,5 +1,6 @@
 package com.egg.libraryapi.controllers;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.egg.libraryapi.entities.Book;
@@ -43,9 +45,9 @@ public class BookController {
 
     // Create
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody @Valid BookRequestDTO bookCreateDTO) {
+    public ResponseEntity<BookResponseDTO> createBook(@RequestBody @Valid BookRequestDTO bookCreateDTO) {
         try {
-            Book bookEntity = bookService.createBook(bookCreateDTO);
+            BookResponseDTO bookEntity = bookService.createBook(bookCreateDTO);
             return ResponseEntity.ok(bookEntity);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -55,25 +57,22 @@ public class BookController {
     // Create with image
     @PostMapping("/create-with-image")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<?> createBookWithImage(
+    public ResponseEntity<BookResponseDTO> createBookWithImage(
             @RequestParam("isbn") Long isbn,
             @RequestParam("bookTitle") String bookTitle,
             @RequestParam("bookActive") Boolean bookActive,
             @RequestParam("specimens") Integer specimens,
             @RequestParam("idEditorial") UUID idEditorial,
             @RequestParam("idAuthor") UUID idAuthor,
-            @RequestParam(value = "file", required = false) MultipartFile file) {
-        try {
-            // Lógica de guardado de imagen si existe
-            String imageUrl = file != null ? fileStorageService.storeBookImage(isbn, file) : "";
-            // Lógica de creación del libro
-            BookRequestDTO dto = new BookRequestDTO(isbn, bookActive, bookTitle, specimens, imageUrl, idEditorial,
-                    idAuthor);
-            bookService.createBook(dto);
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error");
-        }
+            @RequestParam(value = "file", required = false) MultipartFile file)
+            throws IOException, MaxUploadSizeExceededException {
+
+        String imageUrl = file != null ? fileStorageService.storeBookImage(isbn, file) : "";
+
+        BookRequestDTO dto = new BookRequestDTO(isbn, bookActive, bookTitle, specimens, imageUrl, idEditorial,
+                idAuthor);
+        BookResponseDTO bookEntity = bookService.createBook(dto);
+        return ResponseEntity.ok(bookEntity);
     }
 
     // Read by isbn
