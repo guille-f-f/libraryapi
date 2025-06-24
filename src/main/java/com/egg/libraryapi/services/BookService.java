@@ -12,6 +12,7 @@ import com.egg.libraryapi.repositories.BookRepository;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,9 @@ import java.util.UUID;
 
 @Service
 public class BookService {
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     private BookRepository bookRepository;
     private FileStorageService fileStorageService;
@@ -51,9 +55,19 @@ public class BookService {
         book.setEditorial(editorial);
         book.setAuthor(author);
         bookRepository.save(book);
+        // BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
+        // bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(),
+        // EditorialResponseDTO.class));
+        // bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(),
+        // AuthorResponseDTO.class));
+
         BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
         bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(), EditorialResponseDTO.class));
         bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(), AuthorResponseDTO.class));
+
+        // 👉 Setear la URL pública construida dinámicamente
+        bookDTO.setImageUrl(baseUrl + "/uploads/images/books/" + book.getImageUrl());
+
         return bookDTO;
     }
 
@@ -133,10 +147,19 @@ public class BookService {
         return book;
     }
 
+    // public void deleteBookByIsbn(Long isbn) throws
+    // DataIntegrityViolationException, IOException {
+    // Book book = getBookOrThrow(isbn);
+    // System.out.println("\n\nBOOK: " + book);
+    // fileStorageService.deleteImageIfExists(book.getImageUrl());
+    // bookRepository.delete(book);
+    // }
+
     public void deleteBookByIsbn(Long isbn) throws DataIntegrityViolationException, IOException {
         Book book = getBookOrThrow(isbn);
         System.out.println("\n\nBOOK: " + book);
-        fileStorageService.deleteImageIfExists(book.getImageUrl());
+        fileStorageService.deleteImageIfExists(book.getImageUrl()); // 👉 Ahora imageUrl almacena solo el nombre del
+                                                                    // archivo
         bookRepository.delete(book);
     }
 
