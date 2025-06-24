@@ -12,6 +12,7 @@ import com.egg.libraryapi.repositories.BookRepository;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,16 +48,12 @@ public class BookService {
         Book book = modelMapper.map(bookRequestDTO, Book.class);
         Editorial editorial = editorialService.getEditorialById(bookRequestDTO.getIdEditorial());
         Author author = authorService.getAuthorById(bookRequestDTO.getIdAuthor());
-
         book.setEditorial(editorial);
         book.setAuthor(author);
-
         bookRepository.save(book);
-
         BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
         bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(), EditorialResponseDTO.class));
         bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(), AuthorResponseDTO.class));
-
         return bookDTO;
     }
 
@@ -89,11 +86,9 @@ public class BookService {
     public List<BookResponseDTO> getAllBooks() {
         List<Book> books = bookRepository.findAll();
         List<BookResponseDTO> bookResponseDTOs = new ArrayList<>();
-
         for (Book book : books) {
             bookResponseDTOs.add(mapToDTO(book));
         }
-
         return bookResponseDTOs;
     }
 
@@ -131,11 +126,18 @@ public class BookService {
     }
 
     // Delete
-    public Book handleBookActivation(Long ISBN) {
-        Book book = getBookOrThrow(ISBN);
+    public Book handleBookActivation(Long isbn) {
+        Book book = getBookOrThrow(isbn);
         book.setBookActive(!book.getBookActive());
         bookRepository.save(book);
         return book;
+    }
+
+    public void deleteBookByIsbn(Long isbn) throws DataIntegrityViolationException, IOException {
+        Book book = getBookOrThrow(isbn);
+        System.out.println("\n\nBOOK: " + book);
+        fileStorageService.deleteImageIfExists(book.getImageUrl());
+        bookRepository.delete(book);
     }
 
     // =======================
@@ -168,6 +170,7 @@ public class BookService {
     private BookResponseDTO mapToDTO(Book book) {
         return BookResponseDTO.builder()
                 .isbn(book.getIsbn())
+                .bookActive(book.getBookActive())
                 .bookTitle(book.getBookTitle())
                 .specimens(book.getSpecimens())
                 .imageUrl(book.getImageUrl())

@@ -2,9 +2,11 @@ package com.egg.libraryapi.controllers;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -19,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.exceptions.ObjectNotFoundException;
 import com.egg.libraryapi.models.BookRequestDTO;
 import com.egg.libraryapi.models.BookResponseDTO;
@@ -99,9 +100,6 @@ public class BookController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listBooks() {
         List<BookResponseDTO> books = bookService.getAllBooks();
-        if (books.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(books);
     }
 
@@ -110,9 +108,6 @@ public class BookController {
     @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listActiveBooks() {
         List<BookResponseDTO> books = bookService.getAllActiveBooks();
-        if (books.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
         return ResponseEntity.ok(books);
     }
 
@@ -122,9 +117,7 @@ public class BookController {
     public ResponseEntity<List<BookResponseDTO>> listBooksByEditorial(
             @RequestParam @NotBlank String editorialName) {
         List<BookResponseDTO> books = bookService.getAllBooksByEditorial(editorialName);
-        return books.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(books);
+        return ResponseEntity.ok(books);
     }
 
     // Filter by author
@@ -133,9 +126,7 @@ public class BookController {
     public ResponseEntity<List<BookResponseDTO>> listBooksByAuthor(
             @RequestParam @NotBlank String authorName) {
         List<BookResponseDTO> books = bookService.getAllBooksByAuthor(authorName);
-        return books.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(books);
+        return ResponseEntity.ok(books);
     }
 
     // Filter by editorial and author
@@ -145,21 +136,38 @@ public class BookController {
             @RequestParam @NotBlank String editorialName,
             @RequestParam @NotBlank String authorName) {
         List<BookResponseDTO> books = bookService.getAllBooksByEditorialAndAuthor(editorialName, authorName);
-        return books.isEmpty()
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.ok(books);
+        return ResponseEntity.ok(books);
     }
 
     // Delete
-    @DeleteMapping("/{isbn}")
+    @DeleteMapping("/deactivate/{isbn}")
     @PreAuthorize("hasRole('USER')")
-    public String deleteBook(@PathVariable Long isbn) {
-        System.out.println(isbn);
+    public ResponseEntity<Map<String, String>> disableBook(@PathVariable Long isbn) {
         try {
             bookService.handleBookActivation(isbn);
-            return "Book successfully deleted.";
+            return ResponseEntity.ok(Map.of("Message", "Book state update successfully."));
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("Error", "Failed to update book state: " + e.getMessage()));
         }
     }
+
+    @DeleteMapping("/{isbn}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<Map<String, String>> deleteBookByIsbn(@PathVariable Long isbn) {
+        System.out.println("INGRESAMOS AL CONTROLADOR...");
+        try {
+            bookService.deleteBookByIsbn(isbn);
+            return ResponseEntity.ok(Map.of("Message", "Book deleted successfully."));
+        } catch (DataIntegrityViolationException e) {
+            System.out.println("\nERROR!, there are other entities that depend on this");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    Map.of("error", "Failed to delete book, there are other entities that depend on this: "
+                            + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("Error", "Failed to delete book: " + e.getMessage()));
+        }
+    }
+
 }

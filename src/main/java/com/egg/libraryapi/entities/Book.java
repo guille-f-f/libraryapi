@@ -38,7 +38,9 @@ public class Book {
 
     @PrePersist
     private void onCreate() {
-        this.bookActive = true;
+        if (this.bookActive == null) {
+            this.bookActive = true;
+        }
     }
 
 }
