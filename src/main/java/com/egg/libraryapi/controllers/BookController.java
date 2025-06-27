@@ -162,7 +162,7 @@ public class BookController {
         } catch (DataIntegrityViolationException e) {
             System.out.println("\nERROR!, there are other entities that depend on this");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    Map.of("error", "Failed to delete book, there are other entities that depend on this: "
+                    Map.of("Error", "Failed to delete book, there are other entities that depend on this: "
                             + e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

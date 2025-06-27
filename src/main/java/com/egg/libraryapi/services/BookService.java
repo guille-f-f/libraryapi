@@ -1,5 +1,18 @@
 package com.egg.libraryapi.services;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.egg.libraryapi.entities.Author;
 import com.egg.libraryapi.entities.Book;
 import com.egg.libraryapi.entities.Editorial;
@@ -10,24 +23,17 @@ import com.egg.libraryapi.models.BookResponseDTO;
 import com.egg.libraryapi.models.EditorialResponseDTO;
 import com.egg.libraryapi.repositories.BookRepository;
 
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
 @Service
 public class BookService {
 
     @Value("${app.base-url:http://localhost:8080}")
     private String baseUrl;
+
+    @Value("${app.upload.book-images-path:uploads/images/books}")
+    private String uploadDir;
+
+    @Value("${app.default-book-image:default-book.jpg}")
+    private String defaultBookImage;
 
     private BookRepository bookRepository;
     private FileStorageService fileStorageService;
@@ -191,12 +197,17 @@ public class BookService {
     }
 
     private BookResponseDTO mapToDTO(Book book) {
+
+        String imageName = (book.getImageUrl() == null || book.getImageUrl().isBlank())
+                ? defaultBookImage
+                : book.getImageUrl();
+
         return BookResponseDTO.builder()
                 .isbn(book.getIsbn())
                 .bookActive(book.getBookActive())
                 .bookTitle(book.getBookTitle())
                 .specimens(book.getSpecimens())
-                .imageUrl(book.getImageUrl())
+                .imageUrl(String.format("%s/uploads/images/books/%s", baseUrl, imageName))
                 .editorialResponseDTO(book.getEditorial() != null ? EditorialResponseDTO.builder()
                         .editorialName(book.getEditorial().getEditorialName())
                         .build() : null)

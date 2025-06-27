@@ -22,7 +22,7 @@ public class FileUploadController {
     public ResponseEntity<Map<String, String>> uploadBookImage(
             @PathVariable Long isbn,
             @RequestParam("file") MultipartFile file) {
-                System.out.println("ent>ramos");
+                System.out.println("entaramos");
         try {
             String imageUrl = bookService.uploadAndSetImage(isbn, file);
             return ResponseEntity.ok(Map.of(
