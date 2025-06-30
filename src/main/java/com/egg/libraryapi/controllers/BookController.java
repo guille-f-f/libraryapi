@@ -78,7 +78,7 @@ public class BookController {
 
     // Read by isbn
     @GetMapping("/{isbn}")
-    @PreAuthorize("hasRole('USER')")
+    // @PreAuthorize("hasRole('USER')")
     public ResponseEntity<BookResponseDTO> getBookByIsbn(@PathVariable Long isbn) {
         System.out.println("Libro por ISBN");
         BookResponseDTO book = null;
@@ -97,7 +97,7 @@ public class BookController {
 
     // Read all
     @GetMapping
-    @PreAuthorize("hasRole('USER')")
+    // @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listBooks() {
         List<BookResponseDTO> books = bookService.getAllBooks();
         return ResponseEntity.ok(books);
