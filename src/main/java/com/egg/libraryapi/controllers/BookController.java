@@ -97,8 +97,8 @@ public class BookController {
 
     // Read all
     @GetMapping
-    // @PreAuthorize("hasRole('USER')")
     public ResponseEntity<List<BookResponseDTO>> listBooks() {
+        System.out.println("Entramos al controlador para leer los libros...");
         List<BookResponseDTO> books = bookService.getAllBooks();
         return ResponseEntity.ok(books);
     }
