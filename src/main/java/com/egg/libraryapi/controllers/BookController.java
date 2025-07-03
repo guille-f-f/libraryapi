@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -74,6 +75,27 @@ public class BookController {
                 idAuthor);
         BookResponseDTO bookEntity = bookService.createBook(dto);
         return ResponseEntity.ok(bookEntity);
+    }
+
+    // Update
+    @PutMapping("/update-with-image/{isbn}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<BookResponseDTO> updateBookWithImage(
+            @PathVariable Long isbn,
+            @RequestParam("bookTitle") String bookTitle,
+            @RequestParam("bookActive") Boolean bookActive,
+            @RequestParam("specimens") Integer specimens,
+            @RequestParam("idEditorial") UUID idEditorial,
+            @RequestParam("idAuthor") UUID idAuthor,
+            @RequestParam(value = "file", required = false) MultipartFile file)
+            throws IOException, MaxUploadSizeExceededException {
+
+        String imageUrl = file != null ? fileStorageService.storeBookImage(isbn, file) : "";
+
+        BookRequestDTO dto = new BookRequestDTO(isbn, bookActive, bookTitle, specimens, imageUrl, idEditorial,
+                idAuthor);
+        BookResponseDTO updatedBook = bookService.updateBook(dto);
+        return ResponseEntity.ok(updatedBook);
     }
 
     // Read by isbn

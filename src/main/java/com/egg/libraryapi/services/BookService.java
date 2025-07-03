@@ -139,10 +139,26 @@ public class BookService {
 
     // Update
     @Transactional
-    public Book updateBook(BookRequestDTO bookRequestDTO) {
+    public BookResponseDTO updateBook(BookRequestDTO bookRequestDTO) {
         Book book = getBookOrThrow(bookRequestDTO.getIsbn());
-        return bookRepository.save(populateBook(book, bookRequestDTO.getIsbn(), bookRequestDTO.getBookTitle(),
-                bookRequestDTO.getSpecimens(), bookRequestDTO.getIdAuthor(), bookRequestDTO.getIdEditorial()));
+
+        book = populateBook(book,
+                bookRequestDTO.getIsbn(),
+                bookRequestDTO.getBookTitle(),
+                bookRequestDTO.getBookActive(),
+                bookRequestDTO.getSpecimens(),
+                bookRequestDTO.getIdAuthor(),
+                bookRequestDTO.getIdEditorial(),
+                bookRequestDTO.getImageUrl());
+
+        bookRepository.save(book);
+
+        BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
+        bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(), EditorialResponseDTO.class));
+        bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(), AuthorResponseDTO.class));
+        bookDTO.setImageUrl(baseUrl + "/uploads/images/books/" + book.getImageUrl());
+
+        return bookDTO;
     }
 
     // Delete
@@ -179,20 +195,29 @@ public class BookService {
     }
 
     // Mapping the book object with the request data
-    private Book populateBook(Book book, Long isbn, String bookName, Integer specimens, UUID idAuthor,
-            UUID idEditorial) {
+    private Book populateBook(Book book, Long isbn, String bookTitle, Boolean bookActive, Integer specimens,
+            UUID idAuthor,
+            UUID idEditorial, String imageUrl) {
+
         book.setIsbn(isbn);
-        book.setBookTitle(bookName);
+        book.setBookTitle(bookTitle);
+        book.setBookActive(bookActive);
         book.setSpecimens(specimens);
+
         Editorial editorial = editorialService.getEditorialById(idEditorial);
         if (editorial != null) {
             book.setEditorial(editorial);
         }
-        System.out.println("editorial: " + editorial);
+
         Author author = authorService.getAuthorById(idAuthor);
         if (author != null) {
             book.setAuthor(author);
         }
+
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            book.setImageUrl(imageUrl);
+        }
+
         return book;
     }
 
