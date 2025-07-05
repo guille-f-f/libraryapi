@@ -1,5 +1,7 @@
 package com.egg.libraryapi.models;
 
+import java.util.UUID;
+
 import lombok.*;
 
 @Data
@@ -7,5 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class EditorialResponseDTO {
-    private String editorialName;   
+    private UUID idEditorial;
+    private String editorialName;
+    private boolean editorialActive;
 }

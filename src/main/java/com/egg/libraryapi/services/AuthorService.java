@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ public class AuthorService {
 
     @Autowired
     public AuthorService(ModelMapper modelMapper, AuthorRepository authorRepository) {
-        this.modelMapper = modelMapper; 
+        this.modelMapper = modelMapper;
         this.authorRepository = authorRepository;
     }
 
@@ -48,7 +49,7 @@ public class AuthorService {
     public Author getAuthorByName(String authorName) {
         return getAuthorOrThrow(authorName);
     }
-    
+
     @Transactional(readOnly = true)
     public AuthorResponseDTO getAuthorResponseDTOByName(String authorName) {
         return modelMapper.map(getAuthorOrThrow(authorName), AuthorResponseDTO.class);
@@ -73,6 +74,11 @@ public class AuthorService {
                 .orElseThrow(() -> new ObjectNotFoundException("Author with id " + idAuthor + " not found."));
         author.setAuthorActive(!author.getAuthorActive());
         return authorRepository.save(author);
+    }
+
+    public void deleteAuthorById(UUID idAuthor) throws DataIntegrityViolationException {
+        Author author = getAuthorOrThrow(idAuthor);
+        authorRepository.delete(author);
     }
 
     // =======================

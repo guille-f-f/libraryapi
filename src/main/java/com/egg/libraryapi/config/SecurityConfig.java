@@ -3,6 +3,7 @@ package com.egg.libraryapi.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -36,16 +37,17 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(req -> req.requestMatchers("/auth/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                .authorizeHttpRequests(req -> req.requestMatchers("/auth/**", "/uploads/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/books").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/books/{isbn}").permitAll()
+                        .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-                // Se delega al controlador
-                // .logout(logout -> logout.logoutUrl("/auth/logout")
-                //         .logoutSuccessHandler(
-                //                 (request, response, authentication) -> SecurityContextHolder.clearContext()));
+        // Se delega al controlador
+        // .logout(logout -> logout.logoutUrl("/auth/logout")
+        // .logoutSuccessHandler(
+        // (request, response, authentication) ->
+        // SecurityContextHolder.clearContext()));
 
         return http.build();
     }

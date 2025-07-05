@@ -26,7 +26,8 @@ public class Editorial {
 
     @PrePersist
     private void onCreate() {
-        this.editorialActive = true;
-    }
-
+        if (this.editorialActive == null) {
+            this.editorialActive = true;
+        }
+    };
 }

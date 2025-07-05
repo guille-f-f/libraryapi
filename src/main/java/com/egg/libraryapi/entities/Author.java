@@ -28,7 +28,9 @@ public class Author {
 
     @PrePersist
     private void onCreate() {
-        this.authorActive = true;
+        if (this.authorActive == null) {
+            this.authorActive = true;
+        }
     }
 
 }

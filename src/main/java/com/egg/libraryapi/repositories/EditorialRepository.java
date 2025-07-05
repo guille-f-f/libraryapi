@@ -20,15 +20,15 @@ public interface EditorialRepository extends JpaRepository<Editorial, UUID> {
 
     Optional<Editorial> findByEditorialName(String editorialName);
 
-    @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.editorialName) FROM Editorial e WHERE e.editorialName = :editorialName")
+    @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.idEditorial, e.editorialName, e.editorialActive) FROM Editorial e WHERE e.editorialName = :editorialName")
     Optional<EditorialResponseDTO> findByQueryWithEditorialName(@Param("editorialName") String editorialName);
 
     // Filter by idEditorial, and return the EditorialResponseDTO with the editorialName.
-    @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.editorialName) FROM Editorial e WHERE e.idEditorial = :idEditorial")
+    @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.idEditorial, e.editorialName, e.editorialActive) FROM Editorial e WHERE e.idEditorial = :idEditorial")
     Optional<EditorialResponseDTO> findEditorialById(@Param("idEditorial") UUID idEditorial);
     
     // Only the active books are required.
-    @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.editorialName) FROM Editorial e WHERE e.editorialActive = true")
+    @Query("SELECT new com.egg.libraryapi.models.EditorialResponseDTO(e.idEditorial, e.editorialName, e.editorialActive) FROM Editorial e WHERE e.editorialActive = true")
     List<EditorialResponseDTO> findEditorialsActives();
 
 }

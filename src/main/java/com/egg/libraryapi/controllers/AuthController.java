@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.egg.libraryapi.models.AuthRequestDTO;
 import com.egg.libraryapi.models.AuthResponseDTO;
 import com.egg.libraryapi.models.LoginResultDTO;
-import com.egg.libraryapi.models.RefreshTokenRequestDTO;
 import com.egg.libraryapi.services.AuthService;
 
 import io.jsonwebtoken.ExpiredJwtException;

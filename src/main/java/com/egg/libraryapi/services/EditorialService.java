@@ -5,18 +5,14 @@ import com.egg.libraryapi.models.EditorialRequestDTO;
 import com.egg.libraryapi.models.EditorialResponseDTO;
 
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.egg.libraryapi.entities.Editorial;
 import com.egg.libraryapi.repositories.EditorialRepository;
 
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -77,7 +73,7 @@ public class EditorialService {
         return editorial;
     }
 
-    public void deleteEditorial(UUID idEditorial) throws DataIntegrityViolationException {
+    public void deleteEditorialById(UUID idEditorial) throws DataIntegrityViolationException {
         Editorial editorial = getEditorialOrThrow(idEditorial);
         editorialRepository.delete(editorial);
     }
