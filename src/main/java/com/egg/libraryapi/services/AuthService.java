@@ -59,7 +59,7 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
         String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
         String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
@@ -83,9 +83,9 @@ public class AuthService {
 
     // Register
     @Transactional
-    public ResponseEntity<?> registerService(AuthRequestDTO request) {
+    public ResponseEntity<Map<String, String>> registerService(AuthRequestDTO request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            return ResponseEntity.badRequest().body("The user already exists");
+            return ResponseEntity.badRequest().body(Map.of("message", "The user already exists"));
         }
 
         User user = User.builder()
@@ -95,7 +95,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return ResponseEntity.ok("Successfully registered user");
+        return ResponseEntity.ok(Map.of("message", "Successfully registered user"));
     }
 
     // Refresh token
