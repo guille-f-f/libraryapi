@@ -80,22 +80,59 @@ public class BookController {
     // Update
     @PutMapping("/update-with-image/{isbn}")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<BookResponseDTO> updateBookWithImage(
+    public ResponseEntity<?> updateBookWithImage(
             @PathVariable Long isbn,
             @RequestParam("bookTitle") String bookTitle,
             @RequestParam("bookActive") Boolean bookActive,
             @RequestParam("specimens") Integer specimens,
-            @RequestParam("idEditorial") UUID idEditorial,
-            @RequestParam("idAuthor") UUID idAuthor,
+            @RequestParam("idEditorial") String idEditorial,
+            @RequestParam("idAuthor") String idAuthor,
             @RequestParam(value = "file", required = false) MultipartFile file)
             throws IOException, MaxUploadSizeExceededException {
 
-        String imageUrl = file != null ? fileStorageService.storeBookImage(isbn, file) : "";
+        try {
+            // Sanitización básica
+            bookTitle = bookTitle.trim();
+            if (bookTitle.isEmpty() || specimens == null || specimens < 0) {
+                return ResponseEntity.badRequest().body("Invalid input data.");
+            }
 
-        BookRequestDTO dto = new BookRequestDTO(isbn, bookActive, bookTitle, specimens, imageUrl, idEditorial,
-                idAuthor);
-        BookResponseDTO updatedBook = bookService.updateBook(dto);
-        return ResponseEntity.ok(updatedBook);
+            if (idEditorial == null || idEditorial.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Editorial ID cannot be null or empty.");
+            }
+
+            if (idAuthor == null || idAuthor.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Author ID cannot be null or empty.");
+            }
+
+            UUID idEditorialUUID;
+            UUID idAuthorUUID;
+
+            try {
+                idEditorialUUID = UUID.fromString(idEditorial.trim());
+                idAuthorUUID = UUID.fromString(idAuthor.trim());
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid UUID format for author or editorial.");
+            }
+
+            String imageUrl = (file != null && !file.isEmpty())
+                    ? fileStorageService.storeBookImage(isbn, file)
+                    : "";
+
+            BookRequestDTO dto = new BookRequestDTO(isbn, bookActive, bookTitle, specimens, imageUrl,
+                    idEditorialUUID, idAuthorUUID);
+
+            BookResponseDTO updatedBook = bookService.updateBook(dto);
+
+            return ResponseEntity.ok(updatedBook);
+
+        } catch (MaxUploadSizeExceededException e) {
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body("Uploaded file is too large.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing the file.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error: " + e.getMessage());
+        }
     }
 
     // Read by isbn
@@ -122,6 +159,7 @@ public class BookController {
     public ResponseEntity<List<BookResponseDTO>> listBooks() {
         System.out.println("Entramos al controlador para leer los libros...");
         List<BookResponseDTO> books = bookService.getAllBooks();
+        System.out.println(books);
         return ResponseEntity.ok(books);
     }
 

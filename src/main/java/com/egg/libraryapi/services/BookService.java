@@ -61,19 +61,10 @@ public class BookService {
         book.setEditorial(editorial);
         book.setAuthor(author);
         bookRepository.save(book);
-        // BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
-        // bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(),
-        // EditorialResponseDTO.class));
-        // bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(),
-        // AuthorResponseDTO.class));
-
         BookResponseDTO bookDTO = modelMapper.map(book, BookResponseDTO.class);
         bookDTO.setEditorialResponseDTO(modelMapper.map(book.getEditorial(), EditorialResponseDTO.class));
         bookDTO.setAuthorResponseDTO(modelMapper.map(book.getAuthor(), AuthorResponseDTO.class));
-
-        // 👉 Setear la URL pública construida dinámicamente
         bookDTO.setImageUrl(baseUrl + "/uploads/images/books/" + book.getImageUrl());
-
         return bookDTO;
     }
 
@@ -169,19 +160,10 @@ public class BookService {
         return book;
     }
 
-    // public void deleteBookByIsbn(Long isbn) throws
-    // DataIntegrityViolationException, IOException {
-    // Book book = getBookOrThrow(isbn);
-    // System.out.println("\n\nBOOK: " + book);
-    // fileStorageService.deleteImageIfExists(book.getImageUrl());
-    // bookRepository.delete(book);
-    // }
-
     public void deleteBookByIsbn(Long isbn) throws DataIntegrityViolationException, IOException {
         Book book = getBookOrThrow(isbn);
         System.out.println("\n\nBOOK: " + book);
-        fileStorageService.deleteImageIfExists(book.getImageUrl()); // 👉 Ahora imageUrl almacena solo el nombre del
-                                                                    // archivo
+        fileStorageService.deleteImageIfExists(book.getImageUrl()); 
         bookRepository.delete(book);
     }
 
@@ -227,18 +209,32 @@ public class BookService {
                 ? defaultBookImage
                 : book.getImageUrl();
 
+        EditorialResponseDTO editorialDTO = null;
+        if (book.getEditorial() != null) {
+            editorialDTO = EditorialResponseDTO.builder()
+                    .idEditorial(book.getEditorial().getIdEditorial())
+                    .editorialName(book.getEditorial().getEditorialName())
+                    .editorialActive(book.getEditorial().getEditorialActive())
+                    .build();
+        }
+
+        AuthorResponseDTO authorDTO = null;
+        if (book.getAuthor() != null) {
+            authorDTO = AuthorResponseDTO.builder()
+                    .idAuthor(book.getAuthor().getIdAuthor())
+                    .authorName(book.getAuthor().getAuthorName())
+                    .authorActive(book.getAuthor().getAuthorActive())
+                    .build();
+        }
+
         return BookResponseDTO.builder()
                 .isbn(book.getIsbn())
                 .bookActive(book.getBookActive())
                 .bookTitle(book.getBookTitle())
                 .specimens(book.getSpecimens())
                 .imageUrl(String.format("%s/uploads/images/books/%s", baseUrl, imageName))
-                .editorialResponseDTO(book.getEditorial() != null ? EditorialResponseDTO.builder()
-                        .editorialName(book.getEditorial().getEditorialName())
-                        .build() : null)
-                .authorResponseDTO(book.getAuthor() != null ? AuthorResponseDTO.builder()
-                        .authorName(book.getAuthor().getAuthorName())
-                        .build() : null)
+                .editorialResponseDTO(editorialDTO)
+                .authorResponseDTO(authorDTO)
                 .build();
     }
 
