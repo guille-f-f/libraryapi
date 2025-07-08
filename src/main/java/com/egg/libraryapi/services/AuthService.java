@@ -79,6 +79,7 @@ public class AuthService {
     public void logout(String refreshToken) {
         SecurityContextHolder.clearContext();
         refreshTokenRepository.deleteByRefreshToken(refreshToken);
+        System.out.println("token eliminado");
     }
 
     // Register
@@ -100,7 +101,8 @@ public class AuthService {
 
     // Refresh token
     @Transactional(readOnly = true)
-    public ResponseEntity<?> refreshAccessTokenService(String requestRefreshToken) {
+    public ResponseEntity<Map<String, String>> refreshAccessTokenService(String requestRefreshToken) {
+
         if (requestRefreshToken == null) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
@@ -114,6 +116,7 @@ public class AuthService {
         }
 
         RefreshToken refreshToken = refreshTokenOpt.get();
+
         if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(refreshToken);
             return ResponseEntity
@@ -168,6 +171,9 @@ public class AuthService {
 
         System.out.println("USUARIO: " + user);
         System.out.println("TOKEN ALMACENADO: " + storedToken);
+
+        System.out.println(storedToken.get().getExpiryDate()
+                .isAfter(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
 
         return storedToken.isPresent() &&
                 storedToken.get().getRefreshToken().equals(refreshToken) &&
