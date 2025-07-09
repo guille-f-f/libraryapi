@@ -61,15 +61,23 @@ public class AuthService {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
-        String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
-        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
+        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByUser(user);
+
+        String refreshToken;
+        if (refreshTokenOpt.isPresent()) {
+            refreshToken = refreshTokenOpt.get().getRefreshToken();
+        } else {
+            refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
+        }
 
         RefreshToken refreshTokenDDBB = new RefreshToken();
+        refreshTokenDDBB.setId(refreshTokenOpt.get().getId());
         refreshTokenDDBB.setRefreshToken(refreshToken);
         refreshTokenDDBB.setUser(user);
         refreshTokenDDBB.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant());
-
         refreshTokenRepository.save(refreshTokenDDBB);
+
+        String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
 
         return new LoginResultDTO(accessToken, refreshToken);
     }
