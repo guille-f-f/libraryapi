@@ -110,6 +110,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String username = null;
 
         String path = request.getRequestURI();
+        
         System.out.println("Header: " + authHeader + " | Path: " + path);
 
         // Rutas públicas (permitidas sin token)

@@ -55,30 +55,51 @@ public class AuthService {
     // Login
     @Transactional
     public LoginResultDTO loginService(AuthRequestDTO request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        // 1) Autenticar (lanzará AuthenticationException si credenciales inválidas)
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        } catch (org.springframework.security.core.AuthenticationException ex) {
+            // lanzar para que el controlador devuelva 401, o manejar acá devolviendo DTO
+            // especial
+            throw ex;
+        }
 
+        // 2) Cargar usuario
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
-        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByUser(user);
-
-        String refreshToken;
-        if (refreshTokenOpt.isPresent()) {
-            refreshToken = refreshTokenOpt.get().getRefreshToken();
-        } else {
-            refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
-        }
-
-        RefreshToken refreshTokenDDBB = new RefreshToken();
-        refreshTokenDDBB.setId(refreshTokenOpt.get().getId());
-        refreshTokenDDBB.setRefreshToken(refreshToken);
-        refreshTokenDDBB.setUser(user);
-        refreshTokenDDBB.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant());
-        refreshTokenRepository.save(refreshTokenDDBB);
-
+        // 3) Generar access token siempre
         String accessToken = jwtUtil.generateAccessToken(user.getUsername(), user.getRole().name());
 
+        // 4) Manejo del refresh token
+        Optional<RefreshToken> refreshTokenOpt = refreshTokenRepository.findByUser(user);
+        String refreshToken;
+
+        if (refreshTokenOpt.isPresent()) {
+            RefreshToken stored = refreshTokenOpt.get();
+            // Si el token almacenado expiró, crear uno nuevo y actualizar
+            Instant now = Instant.now();
+            if (stored.getExpiryDate() == null || stored.getExpiryDate().isBefore(now)) {
+                refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
+                stored.setRefreshToken(refreshToken);
+                stored.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant());
+                refreshTokenRepository.save(stored);
+            } else {
+                // token almacenado válido -> lo reutilizamos
+                refreshToken = stored.getRefreshToken();
+            }
+        } else {
+            // No había token -> generamos y guardamos uno nuevo
+            refreshToken = jwtUtil.generateRefreshToken(user.getUsername(), user.getRole().name());
+            RefreshToken newToken = new RefreshToken();
+            newToken.setUser(user);
+            newToken.setRefreshToken(refreshToken);
+            newToken.setExpiryDate(jwtUtil.extractExpiration(refreshToken).toInstant());
+            refreshTokenRepository.save(newToken);
+        }
+
+        // 5) Devolver tokens reales
         return new LoginResultDTO(accessToken, refreshToken);
     }
 
